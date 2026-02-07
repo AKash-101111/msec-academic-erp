@@ -2,7 +2,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Bell, Search } from 'lucide-react';
 
 export default function Header() {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
 
     return (
         <header className="sticky top-0 z-30 bg-slate-900/80 backdrop-blur-xl border-b border-slate-800">
@@ -39,6 +39,14 @@ export default function Header() {
                             </p>
                         </div>
                     </div>
+
+                    {/* Logout Button */}
+                    <button
+                        onClick={logout}
+                        className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all"
+                    >
+                        Logout
+                    </button>
                 </div>
             </div>
         </header>
