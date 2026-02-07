@@ -12,8 +12,18 @@ router.get('/profile', authenticate, isAdminOrStudent, async (req, res, next) =>
         let studentId;
 
         if (req.user.role === 'STUDENT') {
+            // Students can ONLY access their own profile (IDOR Protection)
             studentId = req.user.studentProfile?.id;
+
+            // If query param is passed and doesn't match, deny access
+            if (req.query.studentId && req.query.studentId !== studentId) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'Access denied. You can only view your own profile.'
+                });
+            }
         } else {
+            // Admins can access any student's profile
             studentId = req.query.studentId;
         }
 
@@ -33,12 +43,12 @@ router.get('/profile', authenticate, isAdminOrStudent, async (req, res, next) =>
                 batch: true,
                 bloodGroup: true,
                 contact: true,
-                user: { 
-                    select: { 
-                        id: true, 
-                        name: true, 
-                        email: true 
-                    } 
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
                 },
                 academicYears: {
                     orderBy: { year: 'asc' },
@@ -130,6 +140,9 @@ router.get('/attendance', authenticate, isAdminOrStudent, async (req, res, next)
 
         if (req.user.role === 'STUDENT') {
             studentId = req.user.studentProfile?.id;
+            if (req.query.studentId && req.query.studentId !== studentId) {
+                return res.status(403).json({ success: false, message: 'Access denied.' });
+            }
         } else {
             studentId = req.query.studentId;
         }
@@ -173,6 +186,9 @@ router.get('/activities', authenticate, isAdminOrStudent, async (req, res, next)
 
         if (req.user.role === 'STUDENT') {
             studentId = req.user.studentProfile?.id;
+            if (req.query.studentId && req.query.studentId !== studentId) {
+                return res.status(403).json({ success: false, message: 'Access denied.' });
+            }
         } else {
             studentId = req.query.studentId;
         }
@@ -214,6 +230,9 @@ router.get('/performance-trend', authenticate, isAdminOrStudent, async (req, res
 
         if (req.user.role === 'STUDENT') {
             studentId = req.user.studentProfile?.id;
+            if (req.query.studentId && req.query.studentId !== studentId) {
+                return res.status(403).json({ success: false, message: 'Access denied.' });
+            }
         } else {
             studentId = req.query.studentId;
         }
@@ -359,6 +378,9 @@ router.get('/report/pdf', authenticate, isAdminOrStudent, async (req, res, next)
 
         if (req.user.role === 'STUDENT') {
             studentId = req.user.studentProfile?.id;
+            if (req.query.studentId && req.query.studentId !== studentId) {
+                return res.status(403).json({ success: false, message: 'Access denied.' });
+            }
         } else {
             studentId = req.query.studentId;
         }
@@ -394,8 +416,11 @@ router.get('/report/pdf', authenticate, isAdminOrStudent, async (req, res, next)
 
         const pdfBuffer = await generateStudentReport(student);
 
+        // Sanitize rollNumber to prevent header injection
+        const safeFilename = student.rollNumber.replace(/[^a-zA-Z0-9_-]/g, '_');
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${student.rollNumber}_report.pdf"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}_report.pdf"`);
+
         res.send(pdfBuffer);
     } catch (error) {
         next(error);

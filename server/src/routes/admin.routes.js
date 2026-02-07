@@ -8,19 +8,20 @@ const router = express.Router();
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
-const upload = multer({ 
+const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 5 * 1024 * 1024 }, // Reduced to 5MB for safety
   fileFilter: (req, file, cb) => {
-    const allowedTypes = [
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-excel',
+    const allowedMimeTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+      'application/vnd.ms-excel', // .xls
       'text/csv'
     ];
-    if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(xlsx|xls|csv)$/)) {
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Only Excel files (.xlsx, .xls) and CSV files are allowed'));
+      cb(new Error('Invalid file type. Only Excel (.xlsx, .xls) and CSV files are allowed.'));
     }
   }
 });
@@ -29,23 +30,23 @@ const upload = multer({
 router.get('/dashboard', authenticate, isAdmin, async (req, res, next) => {
   try {
     // Optimized: Parallel execution of all queries
-    const [totalStudents, studentsByBatch, attendanceShortage, performanceRisk] = 
+    const [totalStudents, studentsByBatch, attendanceShortage, performanceRisk] =
       await Promise.all([
         prisma.studentProfile.count(),
-        
+
         prisma.studentProfile.groupBy({
           by: ['batch'],
           _count: { id: true },
           orderBy: { batch: 'desc' }
         }),
-        
+
         // Optimized: Use aggregation instead of fetching all records
         prisma.$queryRaw`
           SELECT COUNT(DISTINCT "studentId") as count
           FROM "Attendance"
           WHERE "attendancePercent" < 75
         `,
-        
+
         // Optimized: Use aggregation instead of fetching all records
         prisma.$queryRaw`
           SELECT COUNT(DISTINCT "studentId") as count
@@ -74,21 +75,26 @@ router.get('/dashboard', authenticate, isAdmin, async (req, res, next) => {
 // GET /api/admin/students - Paginated student list with filters
 router.get('/students', authenticate, isAdmin, async (req, res, next) => {
   try {
-    const { 
-      page = 1, 
-      limit = 20, 
-      batch, 
-      department, 
+    const {
+      page = 1,
+      limit = 20,
+      batch,
+      department,
       search,
       sortBy = 'rollNumber',
       sortOrder = 'asc'
     } = req.query;
 
+    // Whitelist allowed sort fields to prevent schema disclosure
+    const allowedSortFields = ['rollNumber', 'department', 'batch'];
+    const safeSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'rollNumber';
+    const safeSortOrder = ['asc', 'desc'].includes(sortOrder) ? sortOrder : 'asc';
+
     const skip = (parseInt(page) - 1) * parseInt(limit);
-    const take = parseInt(limit);
+    const take = Math.min(parseInt(limit), 100); // Cap limit to prevent DoS
 
     const where = {};
-    
+
     if (batch) where.batch = batch;
     if (department) where.department = department;
     if (search) {
@@ -104,17 +110,17 @@ router.get('/students', authenticate, isAdmin, async (req, res, next) => {
         where,
         skip,
         take,
-        orderBy: { [sortBy]: sortOrder },
+        orderBy: { [safeSortBy]: safeSortOrder },
         select: {
           id: true,
           rollNumber: true,
           department: true,
           batch: true,
-          user: { 
-            select: { 
-              name: true, 
-              email: true 
-            } 
+          user: {
+            select: {
+              name: true,
+              email: true
+            }
           },
           academicYears: {
             orderBy: { year: 'desc' },
@@ -128,12 +134,12 @@ router.get('/students', authenticate, isAdmin, async (req, res, next) => {
 
     // Optimized: Batch fetch attendance averages instead of N+1
     const studentIds = students.map(s => s.id);
-    const attendanceAggregates = studentIds.length > 0 
+    const attendanceAggregates = studentIds.length > 0
       ? await prisma.attendance.groupBy({
-          by: ['studentId'],
-          where: { studentId: { in: studentIds } },
-          _avg: { attendancePercent: true }
-        })
+        by: ['studentId'],
+        where: { studentId: { in: studentIds } },
+        _avg: { attendancePercent: true }
+      })
       : [];
 
     // Create lookup map for O(1) access
@@ -144,7 +150,7 @@ router.get('/students', authenticate, isAdmin, async (req, res, next) => {
     const formattedStudents = students.map(s => {
       const avgAttendance = attendanceMap.get(s.id) || null;
       const latestGpa = s.academicYears[0]?.gpa || null;
-      
+
       let riskStatus = 'Normal';
       if (avgAttendance !== null && avgAttendance < 75) riskStatus = 'Attendance Risk';
       if (latestGpa !== null && latestGpa < 5.0) riskStatus = 'Performance Risk';
@@ -254,7 +260,7 @@ router.get('/departments', authenticate, isAdmin, async (req, res, next) => {
   }
 });
 
-// POST /api/admin/upload/academics - Upload academic data
+// POST /api/admin/upload/academics - Upload academic data (Transactional)
 router.post('/upload/academics', authenticate, isAdmin, upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) {
@@ -262,21 +268,23 @@ router.post('/upload/academics', authenticate, isAdmin, upload.single('file'), a
     }
 
     const data = parseExcelFile(req.file.buffer);
-    let updated = 0;
-    let errors = [];
 
-    for (const row of data) {
-      try {
-        const student = await prisma.studentProfile.findUnique({
-          where: { rollNumber: row.rollNumber }
+    // Use transaction for all-or-nothing atomicity
+    const results = await prisma.$transaction(async (tx) => {
+      let updatedCount = 0;
+
+      for (const row of data) {
+        if (!row.rollNumber) continue;
+
+        const student = await tx.studentProfile.findUnique({
+          where: { rollNumber: row.rollNumber.toString() }
         });
 
         if (!student) {
-          errors.push(`Student not found: ${row.rollNumber}`);
-          continue;
+          throw new Error(`Critical Error: Student with roll number ${row.rollNumber} not found. Operation aborted.`);
         }
 
-        const academicYear = await prisma.academicYear.upsert({
+        const academicYear = await tx.academicYear.upsert({
           where: {
             studentId_year: {
               studentId: student.id,
@@ -292,7 +300,7 @@ router.post('/upload/academics', authenticate, isAdmin, upload.single('file'), a
         });
 
         if (row.subjectName) {
-          await prisma.subjectMark.upsert({
+          await tx.subjectMark.upsert({
             where: {
               academicYearId_subjectName: {
                 academicYearId: academicYear.id,
@@ -317,24 +325,23 @@ router.post('/upload/academics', authenticate, isAdmin, upload.single('file'), a
             }
           });
         }
-
-        updated++;
-      } catch (err) {
-        errors.push(`Error processing ${row.rollNumber}: ${err.message}`);
+        updatedCount++;
       }
-    }
+      return updatedCount;
+    });
 
     res.json({
       success: true,
-      message: `Processed ${updated} records`,
-      data: { updated, errors: errors.slice(0, 10) }
+      message: `Successfully processed ${results} academic records.`,
+      data: { updated: results }
     });
   } catch (error) {
+    // Transaction will automatically rollback on error
     next(error);
   }
 });
 
-// POST /api/admin/upload/attendance - Upload attendance data
+// POST /api/admin/upload/attendance - Upload attendance data (Transactional)
 router.post('/upload/attendance', authenticate, isAdmin, upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) {
@@ -342,21 +349,22 @@ router.post('/upload/attendance', authenticate, isAdmin, upload.single('file'), 
     }
 
     const data = parseExcelFile(req.file.buffer);
-    let updated = 0;
-    let errors = [];
 
-    for (const row of data) {
-      try {
-        const student = await prisma.studentProfile.findUnique({
-          where: { rollNumber: row.rollNumber }
+    const results = await prisma.$transaction(async (tx) => {
+      let updatedCount = 0;
+
+      for (const row of data) {
+        if (!row.rollNumber) continue;
+
+        const student = await tx.studentProfile.findUnique({
+          where: { rollNumber: row.rollNumber.toString() }
         });
 
         if (!student) {
-          errors.push(`Student not found: ${row.rollNumber}`);
-          continue;
+          throw new Error(`Critical Error: Student with roll number ${row.rollNumber} not found. Operation aborted.`);
         }
 
-        await prisma.attendance.upsert({
+        await tx.attendance.upsert({
           where: {
             studentId_subjectName: {
               studentId: student.id,
@@ -377,23 +385,22 @@ router.post('/upload/attendance', authenticate, isAdmin, upload.single('file'), 
           }
         });
 
-        updated++;
-      } catch (err) {
-        errors.push(`Error processing ${row.rollNumber}: ${err.message}`);
+        updatedCount++;
       }
-    }
+      return updatedCount;
+    });
 
     res.json({
       success: true,
-      message: `Processed ${updated} records`,
-      data: { updated, errors: errors.slice(0, 10) }
+      message: `Successfully processed ${results} attendance records.`,
+      data: { updated: results }
     });
   } catch (error) {
     next(error);
   }
 });
 
-// POST /api/admin/upload/activities - Upload activities data
+// POST /api/admin/upload/activities - Upload activities data (Transactional)
 router.post('/upload/activities', authenticate, isAdmin, upload.single('file'), async (req, res, next) => {
   try {
     if (!req.file) {
@@ -401,21 +408,22 @@ router.post('/upload/activities', authenticate, isAdmin, upload.single('file'), 
     }
 
     const data = parseExcelFile(req.file.buffer);
-    let updated = 0;
-    let errors = [];
 
-    for (const row of data) {
-      try {
-        const student = await prisma.studentProfile.findUnique({
-          where: { rollNumber: row.rollNumber }
+    const results = await prisma.$transaction(async (tx) => {
+      let updatedCount = 0;
+
+      for (const row of data) {
+        if (!row.rollNumber) continue;
+
+        const student = await tx.studentProfile.findUnique({
+          where: { rollNumber: row.rollNumber.toString() }
         });
 
         if (!student) {
-          errors.push(`Student not found: ${row.rollNumber}`);
-          continue;
+          throw new Error(`Critical Error: Student with roll number ${row.rollNumber} not found. Operation aborted.`);
         }
 
-        await prisma.activities.upsert({
+        await tx.activities.upsert({
           where: { studentId: student.id },
           update: {
             internships: row.internships ? JSON.parse(row.internships) : undefined,
@@ -438,16 +446,15 @@ router.post('/upload/activities', authenticate, isAdmin, upload.single('file'), 
           }
         });
 
-        updated++;
-      } catch (err) {
-        errors.push(`Error processing ${row.rollNumber}: ${err.message}`);
+        updatedCount++;
       }
-    }
+      return updatedCount;
+    });
 
     res.json({
       success: true,
-      message: `Processed ${updated} records`,
-      data: { updated, errors: errors.slice(0, 10) }
+      message: `Successfully processed ${results} activity records.`,
+      data: { updated: results }
     });
   } catch (error) {
     next(error);

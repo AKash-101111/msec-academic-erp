@@ -6,6 +6,17 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* PWA / Native feel */
+.btn, button, [role="button"] {
+  user-select: none;
+  touch-action: manipulation;
+}
+
+body {
+  overscroll-behavior-y: none; /* Prevents "pull-to-refresh" in standalone mode if desired */
 }
 
 body {

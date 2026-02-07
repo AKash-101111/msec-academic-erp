@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import compression from 'compression';
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import studentRoutes from './routes/student.routes.js';
@@ -11,9 +12,19 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Rate limiting to prevent brute-force attacks
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per window
+  message: { success: false, message: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // Middleware
+app.use(limiter);
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3001'],
+  origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true
 }));
 
@@ -44,11 +55,10 @@ app.use('/api/student', studentRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error(`[ERROR] ${new Date().toISOString()}:`, err.stack);
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal Server Error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    message: err.status === 500 ? 'An internal server error occurred' : err.message
   });
 });
 
@@ -57,8 +67,13 @@ app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 MSEC ERP Server running on http://localhost:${PORT}`);
-});
+// Only listen if not running on Vercel (Vercel handles binding automatically)
+if (process.env.VERCEL) {
+  console.log('🚀 MSEC ERP Server running in Serverless Mode');
+} else {
+  app.listen(PORT, () => {
+    console.log(`🚀 MSEC ERP Server running on http://localhost:${PORT}`);
+  });
+}
 
 export default app;
