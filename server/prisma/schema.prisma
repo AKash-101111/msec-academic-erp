@@ -25,6 +25,9 @@ model User {
   updatedAt DateTime @updatedAt
 
   studentProfile StudentProfile?
+  
+  @@index([role])
+  @@index([email, role])
 }
 
 model StudentProfile {
@@ -42,6 +45,10 @@ model StudentProfile {
   academicYears AcademicYear[]
   attendances   Attendance[]
   activities    Activities?
+  
+  @@index([batch])
+  @@index([department])
+  @@index([batch, department])
 }
 
 model AcademicYear {
@@ -56,6 +63,8 @@ model AcademicYear {
   subjectMarks SubjectMark[]
 
   @@unique([studentId, year])
+  @@index([studentId])
+  @@index([gpa])
 }
 
 model SubjectMark {
@@ -88,6 +97,9 @@ model Attendance {
   student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, subjectName])
+  @@index([studentId])
+  @@index([attendancePercent])
+  @@index([studentId, attendancePercent])
 }
 
 model Activities {

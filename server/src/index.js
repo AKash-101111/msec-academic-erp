@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import compression from 'compression';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
@@ -15,6 +16,19 @@ app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:3001'],
   credentials: true
 }));
+
+// Add compression middleware for response optimization
+app.use(compression({
+  level: 6,  // Balance between speed and compression ratio
+  threshold: 1024,  // Only compress responses larger than 1KB
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

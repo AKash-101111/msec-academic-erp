@@ -1,11 +1,10 @@
 import express from 'express';
 import multer from 'multer';
-import { PrismaClient } from '@prisma/client';
 import { authenticate, isAdmin } from '../middleware/auth.js';
 import { parseExcelFile } from '../utils/excelParser.js';
+import prisma from '../utils/prisma.js';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Configure multer for file uploads
 const storage = multer.memoryStorage();
@@ -29,24 +28,31 @@ const upload = multer({
 // GET /api/admin/dashboard - Dashboard statistics
 router.get('/dashboard', authenticate, isAdmin, async (req, res, next) => {
   try {
-    const totalStudents = await prisma.studentProfile.count();
-    
-    const studentsByBatch = await prisma.studentProfile.groupBy({
-      by: ['batch'],
-      _count: { id: true }
-    });
-
-    const attendanceShortage = await prisma.attendance.findMany({
-      where: { attendancePercent: { lt: 75 } },
-      select: { studentId: true },
-      distinct: ['studentId']
-    });
-
-    const performanceRisk = await prisma.academicYear.findMany({
-      where: { gpa: { lt: 5.0 } },
-      select: { studentId: true },
-      distinct: ['studentId']
-    });
+    // Optimized: Parallel execution of all queries
+    const [totalStudents, studentsByBatch, attendanceShortage, performanceRisk] = 
+      await Promise.all([
+        prisma.studentProfile.count(),
+        
+        prisma.studentProfile.groupBy({
+          by: ['batch'],
+          _count: { id: true },
+          orderBy: { batch: 'desc' }
+        }),
+        
+        // Optimized: Use aggregation instead of fetching all records
+        prisma.$queryRaw`
+          SELECT COUNT(DISTINCT "studentId") as count
+          FROM "Attendance"
+          WHERE "attendancePercent" < 75
+        `,
+        
+        // Optimized: Use aggregation instead of fetching all records
+        prisma.$queryRaw`
+          SELECT COUNT(DISTINCT "studentId") as count
+          FROM "AcademicYear"
+          WHERE "gpa" < 5.0
+        `
+      ]);
 
     res.json({
       success: true,
@@ -56,8 +62,8 @@ router.get('/dashboard', authenticate, isAdmin, async (req, res, next) => {
           batch: b.batch,
           count: b._count.id
         })),
-        attendanceShortageCount: attendanceShortage.length,
-        performanceRiskCount: performanceRisk.length
+        attendanceShortageCount: Number(attendanceShortage[0].count),
+        performanceRiskCount: Number(performanceRisk[0].count)
       }
     });
   } catch (error) {
@@ -93,31 +99,50 @@ router.get('/students', authenticate, isAdmin, async (req, res, next) => {
     }
 
     const [students, total] = await Promise.all([
+      // Optimized: Fetch only necessary fields, not all attendances
       prisma.studentProfile.findMany({
         where,
         skip,
         take,
         orderBy: { [sortBy]: sortOrder },
-        include: {
-          user: { select: { name: true, email: true } },
+        select: {
+          id: true,
+          rollNumber: true,
+          department: true,
+          batch: true,
+          user: { 
+            select: { 
+              name: true, 
+              email: true 
+            } 
+          },
           academicYears: {
             orderBy: { year: 'desc' },
             take: 1,
             select: { gpa: true }
-          },
-          attendances: {
-            select: { attendancePercent: true }
           }
         }
       }),
       prisma.studentProfile.count({ where })
     ]);
 
+    // Optimized: Batch fetch attendance averages instead of N+1
+    const studentIds = students.map(s => s.id);
+    const attendanceAggregates = studentIds.length > 0 
+      ? await prisma.attendance.groupBy({
+          by: ['studentId'],
+          where: { studentId: { in: studentIds } },
+          _avg: { attendancePercent: true }
+        })
+      : [];
+
+    // Create lookup map for O(1) access
+    const attendanceMap = new Map(
+      attendanceAggregates.map(a => [a.studentId, a._avg.attendancePercent])
+    );
+
     const formattedStudents = students.map(s => {
-      const avgAttendance = s.attendances.length > 0
-        ? s.attendances.reduce((sum, a) => sum + a.attendancePercent, 0) / s.attendances.length
-        : null;
-      
+      const avgAttendance = attendanceMap.get(s.id) || null;
       const latestGpa = s.academicYears[0]?.gpa || null;
       
       let riskStatus = 'Normal';

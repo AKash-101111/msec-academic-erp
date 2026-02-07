@@ -1,11 +1,10 @@
 import express from 'express';
-import { PrismaClient } from '@prisma/client';
 import { authenticate, isStudent, isAdminOrStudent } from '../middleware/auth.js';
 import { generateStudentReport } from '../utils/pdfGenerator.js';
 import { analyzePerformanceTrend, analyzeAttendance, generateStudentInsights } from '../services/analytics.js';
+import prisma from '../utils/prisma.js';
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // GET /api/student/profile - Get student's full profile
 router.get('/profile', authenticate, isAdminOrStudent, async (req, res, next) => {
@@ -27,20 +26,58 @@ router.get('/profile', authenticate, isAdminOrStudent, async (req, res, next) =>
 
         const student = await prisma.studentProfile.findUnique({
             where: { id: studentId },
-            include: {
-                user: { select: { id: true, name: true, email: true } },
+            select: {
+                id: true,
+                rollNumber: true,
+                department: true,
+                batch: true,
+                bloodGroup: true,
+                contact: true,
+                user: { 
+                    select: { 
+                        id: true, 
+                        name: true, 
+                        email: true 
+                    } 
+                },
                 academicYears: {
                     orderBy: { year: 'asc' },
-                    include: {
+                    select: {
+                        year: true,
+                        gpa: true,
                         subjectMarks: {
-                            orderBy: { subjectName: 'asc' }
+                            orderBy: { subjectName: 'asc' },
+                            select: {
+                                subjectName: true,
+                                marks: true,
+                                unitTest1: true,
+                                unitTest2: true,
+                                unitTest3: true,
+                                iatScore: true
+                            }
                         }
                     }
                 },
                 attendances: {
-                    orderBy: { subjectName: 'asc' }
+                    orderBy: { subjectName: 'asc' },
+                    select: {
+                        subjectName: true,
+                        attendancePercent: true,
+                        totalClasses: true,
+                        attendedClasses: true
+                    }
                 },
-                activities: true
+                activities: {
+                    select: {
+                        internships: true,
+                        scholarships: true,
+                        ecube: true,
+                        extracurricular: true,
+                        sports: true,
+                        certifications: true,
+                        hackathons: true
+                    }
+                }
             }
         });
 
