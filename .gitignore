@@ -1,0 +1,22 @@
+# Node dependencies
+node_modules
+
+# Environment files (very important)
+.env
+server/.env
+client/.env
+
+# Build outputs
+dist
+build
+
+# Logs
+*.log
+
+# Tool / AI folders
+.agents
+.cursor
+
+# OS files
+.DS_Store
+Thumbs.db

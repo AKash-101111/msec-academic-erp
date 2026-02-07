@@ -1,0 +1,107 @@
+// This is your Prisma schema file
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  studentProfile StudentProfile?
+}
+
+model StudentProfile {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  rollNumber String   @unique
+  department String
+  batch      String   // e.g., "2024-2028"
+  bloodGroup String?
+  contact    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  academicYears AcademicYear[]
+  attendances   Attendance[]
+  activities    Activities?
+}
+
+model AcademicYear {
+  id        String   @id @default(cuid())
+  studentId String
+  year      Int      // 1, 2, 3, or 4
+  gpa       Float?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjectMarks SubjectMark[]
+
+  @@unique([studentId, year])
+}
+
+model SubjectMark {
+  id             String   @id @default(cuid())
+  academicYearId String
+  subjectName    String
+  marks          Float?
+  unitTest1      Float?
+  unitTest2      Float?
+  unitTest3      Float?
+  iatScore       Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+
+  @@unique([academicYearId, subjectName])
+}
+
+model Attendance {
+  id               String   @id @default(cuid())
+  studentId        String
+  subjectName      String
+  attendancePercent Float
+  totalClasses     Int?
+  attendedClasses  Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, subjectName])
+}
+
+model Activities {
+  id            String   @id @default(cuid())
+  studentId     String   @unique
+  internships   Json?    // Array of internship objects
+  scholarships  Json?    // Array of scholarship objects
+  ecube         Json?    // E-cube participation
+  extracurricular Json?  // Extra-curricular activities
+  sports        Json?    // Sports achievements
+  certifications Json?   // NPTEL, Coursera, etc.
+  hackathons    Json?    // Hackathon participation
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  student StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
