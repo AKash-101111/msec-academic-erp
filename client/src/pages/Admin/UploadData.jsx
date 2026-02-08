@@ -65,8 +65,8 @@ export default function UploadData() {
         <div className="space-y-6 animate-fadeIn">
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold text-white">Upload Data</h1>
-                <p className="text-slate-400 mt-1">Import academic records, attendance, and activities from Excel files</p>
+                <h1 className="text-2xl font-bold text-plum">Upload Data</h1>
+                <p className="text-plum/60 mt-1">Import academic records, attendance, and activities from Excel files</p>
             </div>
 
             {/* Tab Navigation */}
@@ -78,8 +78,8 @@ export default function UploadData() {
                         className={`
               flex items-center gap-2 px-4 py-3 rounded-xl font-medium transition-all duration-200
               ${activeTab === tab.id
-                                ? 'bg-primary-600/20 text-primary-400 border border-primary-500/30'
-                                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800 border border-transparent'
+                                ? 'bg-royal/10 text-royal border border-royal/20'
+                                : 'bg-lavender/50 text-plum/60 hover:text-plum hover:bg-lavender border border-transparent'
                             }
             `}
                     >
@@ -92,10 +92,10 @@ export default function UploadData() {
             {/* Upload Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
-                    <h2 className="text-lg font-semibold text-white mb-2">
+                    <h2 className="text-lg font-semibold text-plum mb-2">
                         Upload {tabs.find(t => t.id === activeTab)?.label}
                     </h2>
-                    <p className="text-sm text-slate-400 mb-6">
+                    <p className="text-sm text-plum/60 mb-6">
                         {tabs.find(t => t.id === activeTab)?.description}
                     </p>
                     <FileUpload
@@ -105,17 +105,17 @@ export default function UploadData() {
                 </Card>
 
                 <Card>
-                    <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <FileSpreadsheet className="text-emerald-400" size={20} />
+                    <h2 className="text-lg font-semibold text-plum mb-4 flex items-center gap-2">
+                        <FileSpreadsheet className="text-emerald-500" size={20} />
                         File Format Guide
                     </h2>
 
                     <div className="space-y-4">
                         <div>
-                            <h3 className="text-sm font-medium text-slate-300 mb-2">Required Columns</h3>
+                            <h3 className="text-sm font-medium text-plum/80 mb-2">Required Columns</h3>
                             <div className="flex flex-wrap gap-2">
                                 {template.columns.map((col) => (
-                                    <span key={col} className="px-2 py-1 text-xs rounded-lg bg-slate-800 text-slate-300 border border-slate-700">
+                                    <span key={col} className="px-2 py-1 text-xs rounded-lg bg-lavender/50 text-plum/80 border border-amethyst/30">
                                         {col}
                                     </span>
                                 ))}
@@ -123,15 +123,15 @@ export default function UploadData() {
                         </div>
 
                         <div>
-                            <h3 className="text-sm font-medium text-slate-300 mb-2">Example Format</h3>
-                            <div className="p-3 rounded-lg bg-slate-800/50 border border-slate-700">
-                                <code className="text-xs text-emerald-400">{template.example}</code>
+                            <h3 className="text-sm font-medium text-plum/80 mb-2">Example Format</h3>
+                            <div className="p-3 rounded-lg bg-lavender/50 border border-amethyst/30">
+                                <code className="text-xs text-emerald-600">{template.example}</code>
                             </div>
                         </div>
 
                         <div className="p-4 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                            <h3 className="text-sm font-medium text-amber-400 mb-2">Tips</h3>
-                            <ul className="text-xs text-slate-400 space-y-1">
+                            <h3 className="text-sm font-medium text-amber-600 mb-2">Tips</h3>
+                            <ul className="text-xs text-plum/60 space-y-1">
                                 <li>• First row should contain column headers</li>
                                 <li>• Roll numbers must match existing students</li>
                                 <li>• Use standard date formats (YYYY-MM-DD)</li>
@@ -144,8 +144,8 @@ export default function UploadData() {
 
             {/* Recent Uploads (Placeholder) */}
             <Card>
-                <h2 className="text-lg font-semibold text-white mb-4">Recent Upload Activity</h2>
-                <div className="text-center py-8 text-slate-400">
+                <h2 className="text-lg font-semibold text-plum mb-4">Recent Upload Activity</h2>
+                <div className="text-center py-8 text-plum/40">
                     <FileSpreadsheet className="w-12 h-12 mx-auto mb-3 opacity-50" />
                     <p>No recent uploads</p>
                     <p className="text-sm">Your upload history will appear here</p>

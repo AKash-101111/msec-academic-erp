@@ -28,10 +28,10 @@ export default function Activities() {
         return (
             <div className="space-y-6">
                 <div className="animate-pulse">
-                    <div className="h-8 bg-slate-800 rounded w-48 mb-6" />
+                    <div className="h-8 bg-lavender/50 rounded w-48 mb-6" />
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {[...Array(6)].map((_, i) => (
-                            <div key={i} className="h-48 bg-slate-800 rounded-xl" />
+                            <div key={i} className="h-48 bg-lavender/50 rounded-xl" />
                         ))}
                     </div>
                 </div>
@@ -50,13 +50,13 @@ export default function Activities() {
     ];
 
     const colorClasses = {
-        primary: { bg: 'bg-primary-500/20', text: 'text-primary-400', border: 'border-primary-500/30' },
-        accent: { bg: 'bg-accent-500/20', text: 'text-accent-400', border: 'border-accent-500/30' },
-        purple: { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/30' },
-        amber: { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30' },
-        red: { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30' },
-        blue: { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30' },
-        teal: { bg: 'bg-teal-500/20', text: 'text-teal-400', border: 'border-teal-500/30' }
+        primary: { bg: 'bg-royal/10', text: 'text-royal', border: 'border-royal/20' },
+        accent: { bg: 'bg-amethyst/20', text: 'text-amethyst', border: 'border-amethyst/30' },
+        purple: { bg: 'bg-purple-500/10', text: 'text-purple-600', border: 'border-purple-500/20' },
+        amber: { bg: 'bg-amber-500/10', text: 'text-amber-600', border: 'border-amber-500/20' },
+        red: { bg: 'bg-red-500/10', text: 'text-red-600', border: 'border-red-500/20' },
+        blue: { bg: 'bg-blue-500/10', text: 'text-blue-600', border: 'border-blue-500/20' },
+        teal: { bg: 'bg-teal-500/10', text: 'text-teal-600', border: 'border-teal-500/20' }
     };
 
     const hasAnyActivities = sections.some(s =>
@@ -67,8 +67,8 @@ export default function Activities() {
         <div className="space-y-6 animate-fadeIn">
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold text-white">Activities & Achievements</h1>
-                <p className="text-slate-400 mt-1">Your holistic development profile</p>
+                <h1 className="text-2xl font-bold text-plum">Activities & Achievements</h1>
+                <p className="text-plum/60 mt-1">Your holistic development profile</p>
             </div>
 
             {/* Summary Stats */}
@@ -81,8 +81,8 @@ export default function Activities() {
                             <div className={`p-2 rounded-lg ${colors.bg} w-fit mx-auto mb-2`}>
                                 <section.icon className={`w-5 h-5 ${colors.text}`} />
                             </div>
-                            <p className="text-2xl font-bold text-white">{count}</p>
-                            <p className="text-xs text-slate-400">{section.title}</p>
+                            <p className="text-2xl font-bold text-plum">{count}</p>
+                            <p className="text-xs text-plum/60">{section.title}</p>
                         </Card>
                     );
                 })}
@@ -102,7 +102,7 @@ export default function Activities() {
                                     <div className={`p-2 rounded-lg ${colors.bg}`}>
                                         <section.icon className={`w-5 h-5 ${colors.text}`} />
                                     </div>
-                                    <h2 className="text-lg font-semibold text-white">{section.title}</h2>
+                                    <h2 className="text-lg font-semibold text-plum">{section.title}</h2>
                                 </div>
                                 <div className="space-y-3">
                                     {items.map((item, index) => (
@@ -115,9 +115,9 @@ export default function Activities() {
                 </div>
             ) : (
                 <Card className="text-center py-12">
-                    <Trophy className="w-12 h-12 mx-auto text-slate-600 mb-3" />
-                    <p className="text-slate-400">No activities recorded yet</p>
-                    <p className="text-sm text-slate-500 mt-1">
+                    <Trophy className="w-12 h-12 mx-auto text-plum/40 mb-3" />
+                    <p className="text-plum/60">No activities recorded yet</p>
+                    <p className="text-sm text-plum/50 mt-1">
                         Your internships, certifications, and achievements will appear here
                     </p>
                 </Card>
@@ -130,7 +130,7 @@ function ActivityItem({ item, color }) {
     if (typeof item === 'string') {
         return (
             <div className={`p-3 rounded-lg ${color.bg} border ${color.border}`}>
-                <p className="text-white">{item}</p>
+                <p className="text-plum">{item}</p>
             </div>
         );
     }
@@ -148,9 +148,9 @@ function ActivityItem({ item, color }) {
 
     return (
         <div className={`p-3 rounded-lg ${color.bg} border ${color.border}`}>
-            <p className="text-white font-medium">{title}</p>
+            <p className="text-plum font-medium">{title}</p>
             {details.length > 0 && (
-                <p className="text-sm text-slate-400 mt-1">{details.join(' • ')}</p>
+                <p className="text-sm text-plum/60 mt-1">{details.join(' • ')}</p>
             )}
         </div>
     );

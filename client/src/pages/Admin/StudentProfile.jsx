@@ -62,13 +62,13 @@ export default function StudentProfile() {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all"
+                        className="p-2 rounded-lg text-plum/60 hover:text-plum hover:bg-lavender/50 transition-all"
                     >
                         <ArrowLeft size={24} />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold text-white">{student.user.name}</h1>
-                        <p className="text-slate-400">{student.rollNumber} • {student.department}</p>
+                        <h1 className="text-2xl font-bold text-plum">{student.user.name}</h1>
+                        <p className="text-plum/60">{student.rollNumber} • {student.department}</p>
                     </div>
                 </div>
                 <button
@@ -90,8 +90,8 @@ export default function StudentProfile() {
             {/* Personal Info & Attendance Overview */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card>
-                    <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <User size={20} className="text-primary-400" />
+                    <h2 className="text-lg font-semibold text-plum mb-4 flex items-center gap-2">
+                        <User size={20} className="text-royal" />
                         Personal Information
                     </h2>
                     <div className="space-y-3 text-sm">
@@ -105,8 +105,8 @@ export default function StudentProfile() {
                 </Card>
 
                 <Card className="lg:col-span-2">
-                    <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <Calendar size={20} className="text-accent-400" />
+                    <h2 className="text-lg font-semibold text-plum mb-4 flex items-center gap-2">
+                        <Calendar size={20} className="text-amethyst" />
                         Attendance Overview
                     </h2>
                     <div className="flex items-center gap-8">
@@ -115,10 +115,10 @@ export default function StudentProfile() {
                             <p className="text-sm text-slate-400 mb-3">Subject-wise Attendance</p>
                             <div className="grid grid-cols-2 gap-2">
                                 {student.attendances?.slice(0, 6).map((att) => (
-                                    <div key={att.id} className="flex items-center justify-between p-2 rounded-lg bg-slate-800/50">
-                                        <span className="text-xs text-slate-400 truncate flex-1">{att.subjectName}</span>
+                                    <div key={att.id} className="flex items-center justify-between p-2 rounded-lg bg-lavender/50 border border-amethyst/20">
+                                        <span className="text-xs text-plum/60 truncate flex-1">{att.subjectName}</span>
                                         <span className={`text-xs font-medium ml-2 ${att.attendancePercent >= 75 ? 'text-emerald-400' :
-                                                att.attendancePercent >= 60 ? 'text-amber-400' : 'text-red-400'
+                                            att.attendancePercent >= 60 ? 'text-amber-400' : 'text-red-400'
                                             }`}>
                                             {att.attendancePercent.toFixed(0)}%
                                         </span>
@@ -132,22 +132,22 @@ export default function StudentProfile() {
 
             {/* Academic Records */}
             <Card>
-                <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                    <BookOpen size={20} className="text-primary-400" />
+                <h2 className="text-lg font-semibold text-plum mb-4 flex items-center gap-2">
+                    <BookOpen size={20} className="text-royal" />
                     Academic Records
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {student.academicYears?.map((year) => (
-                        <div key={year.id} className="p-4 rounded-xl bg-slate-800/50 border border-slate-700">
+                        <div key={year.id} className="p-4 rounded-xl bg-lavender/50 border border-amethyst/30">
                             <div className="flex items-center justify-between mb-3">
-                                <span className="text-primary-400 font-semibold">Year {year.year}</span>
-                                <span className="text-2xl font-bold text-white">{year.gpa?.toFixed(2) || '-'}</span>
+                                <span className="text-royal font-semibold">Year {year.year}</span>
+                                <span className="text-2xl font-bold text-plum">{year.gpa?.toFixed(2) || '-'}</span>
                             </div>
                             <div className="space-y-1">
                                 {year.subjectMarks?.slice(0, 4).map((subject) => (
                                     <div key={subject.id} className="flex justify-between text-xs">
-                                        <span className="text-slate-400 truncate flex-1">{subject.subjectName}</span>
-                                        <span className="text-slate-300 ml-2">{subject.marks?.toFixed(0) || '-'}</span>
+                                        <span className="text-plum/60 truncate flex-1">{subject.subjectName}</span>
+                                        <span className="text-plum/80 ml-2">{subject.marks?.toFixed(0) || '-'}</span>
                                     </div>
                                 ))}
                                 {year.subjectMarks?.length > 4 && (
@@ -162,8 +162,8 @@ export default function StudentProfile() {
             {/* Activities */}
             {student.activities && (
                 <Card>
-                    <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                        <Trophy size={20} className="text-amber-400" />
+                    <h2 className="text-lg font-semibold text-plum mb-4 flex items-center gap-2">
+                        <Trophy size={20} className="text-amber-500" />
                         Holistic Development
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -183,11 +183,11 @@ export default function StudentProfile() {
 function InfoRow({ label, value, icon }) {
     return (
         <div className="flex items-center justify-between">
-            <span className="text-slate-400 flex items-center gap-2">
+            <span className="text-plum/60 flex items-center gap-2">
                 {icon}
                 {label}
             </span>
-            <span className="text-white">{value}</span>
+            <span className="text-plum font-medium">{value}</span>
         </div>
     );
 }
@@ -196,11 +196,11 @@ function ActivitySection({ title, items }) {
     if (!items || items.length === 0) return null;
 
     return (
-        <div className="p-4 rounded-xl bg-slate-800/50">
-            <h3 className="text-sm font-semibold text-white mb-2">{title}</h3>
+        <div className="p-4 rounded-xl bg-lavender/50 border border-amethyst/30">
+            <h3 className="text-sm font-semibold text-plum mb-2">{title}</h3>
             <div className="space-y-1">
                 {items.map((item, index) => (
-                    <p key={index} className="text-xs text-slate-400">
+                    <p key={index} className="text-xs text-plum/60">
                         • {typeof item === 'string' ? item : item.name || item.company || item.event || item.activity || JSON.stringify(item)}
                     </p>
                 ))}

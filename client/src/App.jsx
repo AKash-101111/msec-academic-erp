@@ -25,8 +25,13 @@ const Analytics = lazy(() => import('./pages/Student/Analytics'));
 // Loading Spinner Component
 function LoadingSpinner() {
     return (
+<<<<<<< HEAD
         <div className="min-h-screen flex items-center justify-center bg-app dark:bg-app-dark transition-colors">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-secondary"></div>
+=======
+        <div className="min-h-screen flex items-center justify-center bg-lavender">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-royal"></div>
+>>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
         </div>
     );
 }

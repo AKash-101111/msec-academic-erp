@@ -63,8 +63,8 @@ export default function FileUpload({ onUpload, accept = '.xlsx,.xls,.csv', loadi
                 className={`
           relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200
           ${dragActive
-                        ? 'border-primary-500 bg-primary-500/10'
-                        : 'border-slate-700 hover:border-slate-600'
+                        ? 'border-royal bg-royal/10'
+                        : 'border-amethyst/50 hover:border-amethyst'
                     }
           ${loading ? 'opacity-50 pointer-events-none' : ''}
         `}
@@ -80,14 +80,14 @@ export default function FileUpload({ onUpload, accept = '.xlsx,.xls,.csv', loadi
                 <div className="flex flex-col items-center">
                     <div className={`
             w-16 h-16 rounded-full flex items-center justify-center mb-4
-            ${dragActive ? 'bg-primary-500/20' : 'bg-slate-800'}
+            ${dragActive ? 'bg-royal/20' : 'bg-lavender/50'}
           `}>
-                        <Upload className={`w-8 h-8 ${dragActive ? 'text-primary-400' : 'text-slate-400'}`} />
+                        <Upload className={`w-8 h-8 ${dragActive ? 'text-royal' : 'text-plum/40'}`} />
                     </div>
-                    <p className="text-white font-medium mb-1">
+                    <p className="text-plum font-medium mb-1">
                         {dragActive ? 'Drop file here' : 'Drag & drop or click to upload'}
                     </p>
-                    <p className="text-sm text-slate-400">
+                    <p className="text-sm text-plum/60">
                         Supports Excel (.xlsx, .xls) and CSV files
                     </p>
                 </div>
@@ -97,17 +97,17 @@ export default function FileUpload({ onUpload, accept = '.xlsx,.xls,.csv', loadi
                 <div className="glass-card p-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <FileSpreadsheet className="w-8 h-8 text-emerald-400" />
+                            <FileSpreadsheet className="w-8 h-8 text-emerald-500" />
                             <div>
-                                <p className="text-white font-medium">{file.name}</p>
-                                <p className="text-sm text-slate-400">
+                                <p className="text-plum font-medium">{file.name}</p>
+                                <p className="text-sm text-plum/60">
                                     {(file.size / 1024).toFixed(1)} KB
                                 </p>
                             </div>
                         </div>
                         <button
                             onClick={clearFile}
-                            className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700 transition-all"
+                            className="p-2 rounded-lg text-plum/40 hover:text-plum hover:bg-lavender transition-all"
                         >
                             <X size={20} />
                         </button>
@@ -115,10 +115,10 @@ export default function FileUpload({ onUpload, accept = '.xlsx,.xls,.csv', loadi
 
                     {loading && (
                         <div className="mt-4">
-                            <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
-                                <div className="h-full bg-primary-500 rounded-full animate-pulse" style={{ width: '75%' }} />
+                            <div className="h-2 bg-lavender rounded-full overflow-hidden">
+                                <div className="h-full bg-royal rounded-full animate-pulse" style={{ width: '75%' }} />
                             </div>
-                            <p className="text-sm text-slate-400 mt-2">Uploading...</p>
+                            <p className="text-sm text-plum/60 mt-2">Uploading...</p>
                         </div>
                     )}
 

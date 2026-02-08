@@ -34,9 +34,9 @@ export default function Academics() {
         return (
             <div className="space-y-6">
                 <div className="animate-pulse">
-                    <div className="h-8 bg-slate-800 rounded w-48 mb-6" />
+                    <div className="h-8 bg-lavender/50 rounded w-48 mb-6" />
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className="h-24 bg-slate-800 rounded-xl mb-4" />
+                        <div key={i} className="h-24 bg-lavender/50 rounded-xl mb-4" />
                     ))}
                 </div>
             </div>
@@ -47,13 +47,13 @@ export default function Academics() {
         <div className="space-y-6 animate-fadeIn">
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold text-white">Academic Records</h1>
-                <p className="text-slate-400 mt-1">Year-wise academic performance and subject details</p>
+                <h1 className="text-2xl font-bold text-plum">Academic Records</h1>
+                <p className="text-plum/60 mt-1">Year-wise academic performance and subject details</p>
             </div>
 
             {/* GPA Overview */}
             <Card>
-                <h2 className="text-lg font-semibold text-white mb-4">GPA Overview</h2>
+                <h2 className="text-lg font-semibold text-plum mb-4">GPA Overview</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {profile?.academics?.map((year) => (
                         <div
@@ -61,19 +61,19 @@ export default function Academics() {
                             className={`
                 p-4 rounded-xl text-center cursor-pointer transition-all
                 ${expandedYear === year.year
-                                    ? 'bg-primary-500/20 border border-primary-500/30'
-                                    : 'bg-slate-800/50 hover:bg-slate-800'
+                                    ? 'bg-royal/10 border border-royal/20'
+                                    : 'bg-lavender/50 hover:bg-lavender border border-amethyst/20'
                                 }
               `}
                             onClick={() => setExpandedYear(expandedYear === year.year ? null : year.year)}
                         >
-                            <p className="text-sm text-slate-400">Year {year.year}</p>
-                            <p className={`text-3xl font-bold mt-1 ${year.gpa >= 8 ? 'text-emerald-400' :
-                                    year.gpa >= 6 ? 'text-amber-400' : 'text-red-400'
+                            <p className="text-sm text-plum/60">Year {year.year}</p>
+                            <p className={`text-3xl font-bold mt-1 ${year.gpa >= 8 ? 'text-emerald-500' :
+                                year.gpa >= 6 ? 'text-amber-500' : 'text-red-500'
                                 }`}>
                                 {year.gpa?.toFixed(2) || '-'}
                             </p>
-                            <p className="text-xs text-slate-500 mt-1">{year.subjects?.length || 0} subjects</p>
+                            <p className="text-xs text-plum/50 mt-1">{year.subjects?.length || 0} subjects</p>
                         </div>
                     ))}
                 </div>
@@ -88,34 +88,34 @@ export default function Academics() {
                             onClick={() => setExpandedYear(expandedYear === year.year ? null : year.year)}
                         >
                             <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-primary-500/20">
-                                    <BookOpen className="w-5 h-5 text-primary-400" />
+                                <div className="p-2 rounded-lg bg-royal/10">
+                                    <BookOpen className="w-5 h-5 text-royal" />
                                 </div>
                                 <div className="text-left">
-                                    <h3 className="text-lg font-semibold text-white">Year {year.year}</h3>
-                                    <p className="text-sm text-slate-400">{year.subjects?.length || 0} subjects</p>
+                                    <h3 className="text-lg font-semibold text-plum">Year {year.year}</h3>
+                                    <p className="text-sm text-plum/60">{year.subjects?.length || 0} subjects</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
-                                <span className={`text-2xl font-bold ${year.gpa >= 8 ? 'text-emerald-400' :
-                                        year.gpa >= 6 ? 'text-amber-400' : 'text-red-400'
+                                <span className={`text-2xl font-bold ${year.gpa >= 8 ? 'text-emerald-500' :
+                                    year.gpa >= 6 ? 'text-amber-500' : 'text-red-500'
                                     }`}>
                                     GPA: {year.gpa?.toFixed(2) || '-'}
                                 </span>
                                 {expandedYear === year.year ? (
-                                    <ChevronUp className="text-slate-400" />
+                                    <ChevronUp className="text-plum/40" />
                                 ) : (
-                                    <ChevronDown className="text-slate-400" />
+                                    <ChevronDown className="text-plum/40" />
                                 )}
                             </div>
                         </button>
 
                         {expandedYear === year.year && year.subjects && (
-                            <div className="mt-6 border-t border-slate-700 pt-6">
+                            <div className="mt-6 border-t border-amethyst/20 pt-6">
                                 <div className="overflow-x-auto">
                                     <table className="w-full">
                                         <thead>
-                                            <tr className="text-left text-xs text-slate-400 uppercase">
+                                            <tr className="text-left text-xs text-plum/60 uppercase">
                                                 <th className="pb-3">Subject</th>
                                                 <th className="pb-3 text-center">UT 1</th>
                                                 <th className="pb-3 text-center">UT 2</th>
@@ -126,14 +126,14 @@ export default function Academics() {
                                         </thead>
                                         <tbody className="text-sm">
                                             {year.subjects.map((subject, idx) => (
-                                                <tr key={idx} className="border-t border-slate-700/50">
-                                                    <td className="py-3 text-white">{subject.subjectName}</td>
-                                                    <td className="py-3 text-center text-slate-300">{subject.unitTest1?.toFixed(0) || '-'}</td>
-                                                    <td className="py-3 text-center text-slate-300">{subject.unitTest2?.toFixed(0) || '-'}</td>
-                                                    <td className="py-3 text-center text-slate-300">{subject.unitTest3?.toFixed(0) || '-'}</td>
-                                                    <td className="py-3 text-center text-slate-300">{subject.iatScore?.toFixed(0) || '-'}</td>
-                                                    <td className={`py-3 text-center font-semibold ${subject.marks >= 80 ? 'text-emerald-400' :
-                                                            subject.marks >= 60 ? 'text-amber-400' : 'text-red-400'
+                                                <tr key={idx} className="border-t border-amethyst/10">
+                                                    <td className="py-3 text-plum">{subject.subjectName}</td>
+                                                    <td className="py-3 text-center text-plum/80">{subject.unitTest1?.toFixed(0) || '-'}</td>
+                                                    <td className="py-3 text-center text-plum/80">{subject.unitTest2?.toFixed(0) || '-'}</td>
+                                                    <td className="py-3 text-center text-plum/80">{subject.unitTest3?.toFixed(0) || '-'}</td>
+                                                    <td className="py-3 text-center text-plum/80">{subject.iatScore?.toFixed(0) || '-'}</td>
+                                                    <td className={`py-3 text-center font-semibold ${subject.marks >= 80 ? 'text-emerald-500' :
+                                                        subject.marks >= 60 ? 'text-amber-500' : 'text-red-500'
                                                         }`}>
                                                         {subject.marks?.toFixed(0) || '-'}
                                                     </td>
@@ -150,8 +150,8 @@ export default function Academics() {
 
             {(!profile?.academics || profile.academics.length === 0) && (
                 <Card className="text-center py-12">
-                    <BookOpen className="w-12 h-12 mx-auto text-slate-600 mb-3" />
-                    <p className="text-slate-400">No academic records available</p>
+                    <BookOpen className="w-12 h-12 mx-auto text-plum/40 mb-3" />
+                    <p className="text-plum/60">No academic records available</p>
                 </Card>
             )}
         </div>
