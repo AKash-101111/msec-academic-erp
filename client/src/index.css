@@ -1,67 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* PWA / Native feel */
+  .btn, button, [role="button"] {
+    user-select: none;
+    touch-action: manipulation;
+  }
+
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  /* Light mode (default) */
+  body {
+    font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+    background-color: #F9FAFB;
+    color: #111827;
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Dark mode */
+  .dark body {
+    background-color: #030712;
+    color: #E5E7EB;
+  }
 }
 
-/* PWA / Native feel */
-.btn, button, [role="button"] {
-  user-select: none;
-  touch-action: manipulation;
-}
-
-body {
-  overscroll-behavior-y: none; /* Prevents "pull-to-refresh" in standalone mode if desired */
-}
-
-body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background-color: #0f172a;
-  color: #f1f5f9;
-  min-height: 100vh;
-}
-
-/* Custom scrollbar */
+/* Custom scrollbar - Light Mode */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: #E5E7EB;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
+  background: #9CA3AF;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #6B7280;
+}
+
+/* Custom scrollbar - Dark Mode */
+.dark ::-webkit-scrollbar-track {
+  background: #1F2937;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4B5563;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6B7280;
 }
 
 /* Glass morphism effects */
 .glass {
-  background: rgba(30, 41, 59, 0.8);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(17, 24, 39, 0.1);
+}
+
+.dark .glass {
+  background: rgba(17, 24, 39, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(229, 231, 235, 0.1);
 }
 
 .glass-card {
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 0.9) 100%);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(17, 24, 39, 0.1);
   border-radius: 1rem;
+}
+
+.dark .glass-card {
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.9) 0%, rgba(3, 7, 18, 0.9) 100%);
+  border: 1px solid rgba(229, 231, 235, 0.1);
 }
 
 /* Gradient text */
 .gradient-text {
-  background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+  background: linear-gradient(135deg, #6366F1 0%, #22C55E 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -69,24 +105,44 @@ body {
 
 /* Button hover effects */
 .btn-primary {
-  @apply bg-gradient-to-r from-primary-600 to-primary-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all duration-300;
+  @apply bg-secondary text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all duration-300;
 }
 
 .btn-primary:hover {
-  @apply from-primary-500 to-primary-600 shadow-primary-500/25 shadow-xl transform -translate-y-0.5;
+  @apply bg-secondary-600 shadow-secondary-500/25 shadow-xl transform -translate-y-0.5;
+}
+
+.btn-accent {
+  @apply bg-accent text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all duration-300;
+}
+
+.btn-accent:hover {
+  @apply bg-accent-600 shadow-accent-500/25 shadow-xl transform -translate-y-0.5;
 }
 
 /* Status colors */
 .status-success {
-  @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+  @apply bg-accent-500/20 text-accent-700 border border-accent-500/30;
+}
+
+.dark .status-success {
+  @apply text-accent-400;
 }
 
 .status-warning {
-  @apply bg-amber-500/20 text-amber-400 border border-amber-500/30;
+  @apply bg-amber-500/20 text-amber-700 border border-amber-500/30;
+}
+
+.dark .status-warning {
+  @apply text-amber-400;
 }
 
 .status-danger {
-  @apply bg-red-500/20 text-red-400 border border-red-500/30;
+  @apply bg-red-500/20 text-red-700 border border-red-500/30;
+}
+
+.dark .status-danger {
+  @apply text-red-400;
 }
 
 /* Animations */
@@ -100,8 +156,8 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.5); }
+  0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.5); }
 }
 
 .pulse-glow {
@@ -114,20 +170,36 @@ body {
 }
 
 .data-table th {
-  @apply px-4 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-800/50;
+  @apply px-4 py-3 text-left text-xs font-semibold text-primary-600 uppercase tracking-wider bg-primary-50;
+}
+
+.dark .data-table th {
+  @apply text-primary-400 bg-primary-800/50;
 }
 
 .data-table td {
-  @apply px-4 py-3 text-slate-300 border-t border-slate-700/50;
+  @apply px-4 py-3 text-primary-700 border-t border-primary-200;
+}
+
+.dark .data-table td {
+  @apply text-primary-300 border-primary-700/50;
 }
 
 .data-table tr:hover td {
-  @apply bg-slate-800/30;
+  @apply bg-primary-50;
+}
+
+.dark .data-table tr:hover td {
+  @apply bg-primary-800/30;
 }
 
 /* Input styles */
 .input-field {
-  @apply w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all duration-200;
+  @apply w-full px-4 py-3 bg-white border border-primary-300 rounded-lg text-primary-900 placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-secondary-500/50 focus:border-secondary-500 transition-all duration-200;
+}
+
+.dark .input-field {
+  @apply bg-primary-800/50 border-primary-700 text-white placeholder-primary-500;
 }
 
 /* Gauge component */
@@ -144,5 +216,9 @@ body {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  border: 12px solid #334155;
+  border: 12px solid #E5E7EB;
+}
+
+.dark .attendance-gauge::before {
+  border-color: #374151;
 }
