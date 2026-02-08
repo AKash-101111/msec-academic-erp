@@ -13,7 +13,9 @@
   }
 
   /* PWA / Native feel */
-  .btn, button, [role="button"] {
+  .btn,
+  button,
+  [role="button"] {
     user-select: none;
     touch-action: manipulation;
   }
@@ -38,9 +40,6 @@
   }
 }
 
-<<<<<<< HEAD
-/* Custom scrollbar - Light Mode */
-=======
 /* PWA / Native feel */
 .btn,
 button,
@@ -62,26 +61,17 @@ body {
 }
 
 /* Custom scrollbar */
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-<<<<<<< HEAD
   background: #E5E7EB;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #9CA3AF;
-=======
-  background: #F2EAF7;
-}
-
-::-webkit-scrollbar-thumb {
   background: #C59DD9;
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
   border-radius: 4px;
 }
 
@@ -105,23 +95,6 @@ body {
 /* Glass morphism effects */
 /* Glass morphism effects */
 .glass {
-<<<<<<< HEAD
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(17, 24, 39, 0.1);
-}
-
-.dark .glass {
-  background: rgba(17, 24, 39, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(229, 231, 235, 0.1);
-}
-
-.glass-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(17, 24, 39, 0.1);
-=======
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(197, 157, 217, 0.3);
@@ -132,7 +105,6 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.6);
   box-shadow: 0 8px 32px rgba(122, 63, 145, 0.05);
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
   border-radius: 1rem;
 }
 
@@ -144,11 +116,7 @@ body {
 /* Gradient text */
 /* Gradient text */
 .gradient-text {
-<<<<<<< HEAD
-  background: linear-gradient(135deg, #6366F1 0%, #22C55E 100%);
-=======
   background: linear-gradient(135deg, #7A3F91 0%, #C59DD9 100%);
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -156,27 +124,11 @@ body {
 
 /* Button hover effects */
 .btn-primary {
-<<<<<<< HEAD
-  @apply bg-secondary text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all duration-300;
-}
-
-.btn-primary:hover {
-  @apply bg-secondary-600 shadow-secondary-500/25 shadow-xl transform -translate-y-0.5;
-}
-
-.btn-accent {
-  @apply bg-accent text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all duration-300;
-}
-
-.btn-accent:hover {
-  @apply bg-accent-600 shadow-accent-500/25 shadow-xl transform -translate-y-0.5;
-=======
   @apply bg-royal text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition-all duration-300;
 }
 
 .btn-primary:hover {
   @apply bg-royal/90 shadow-royal/25 shadow-xl transform -translate-y-0.5;
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
 }
 
 /* Status colors */
@@ -222,10 +174,6 @@ body {
 }
 
 @keyframes pulse-glow {
-<<<<<<< HEAD
-  0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
-  50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.5); }
-=======
 
   0%,
   100% {
@@ -235,7 +183,6 @@ body {
   50% {
     box-shadow: 0 0 40px rgba(122, 63, 145, 0.5);
   }
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
 }
 
 .pulse-glow {
@@ -248,29 +195,6 @@ body {
 }
 
 .data-table th {
-<<<<<<< HEAD
-  @apply px-4 py-3 text-left text-xs font-semibold text-primary-600 uppercase tracking-wider bg-primary-50;
-}
-
-.dark .data-table th {
-  @apply text-primary-400 bg-primary-800/50;
-}
-
-.data-table td {
-  @apply px-4 py-3 text-primary-700 border-t border-primary-200;
-}
-
-.dark .data-table td {
-  @apply text-primary-300 border-primary-700/50;
-}
-
-.data-table tr:hover td {
-  @apply bg-primary-50;
-}
-
-.dark .data-table tr:hover td {
-  @apply bg-primary-800/30;
-=======
   @apply px-4 py-3 text-left text-xs font-semibold text-plum/70 uppercase tracking-wider bg-lavender/50;
 }
 
@@ -280,20 +204,11 @@ body {
 
 .data-table tr:hover td {
   @apply bg-lavender/30;
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
 }
 
 /* Input styles */
 .input-field {
-<<<<<<< HEAD
-  @apply w-full px-4 py-3 bg-white border border-primary-300 rounded-lg text-primary-900 placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-secondary-500/50 focus:border-secondary-500 transition-all duration-200;
-}
-
-.dark .input-field {
-  @apply bg-primary-800/50 border-primary-700 text-white placeholder-primary-500;
-=======
   @apply w-full px-4 py-3 bg-lavender/30 border border-amethyst/50 rounded-lg text-plum placeholder:text-plum/50 focus:outline-none focus:ring-2 focus:ring-royal/50 focus:border-royal transition-all duration-200;
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
 }
 
 /* Gauge component */
@@ -310,14 +225,5 @@ body {
   width: 120px;
   height: 120px;
   border-radius: 50%;
-<<<<<<< HEAD
-  border: 12px solid #E5E7EB;
-}
-
-.dark .attendance-gauge::before {
-  border-color: #374151;
-}
-=======
   border: 12px solid #E2D9F3;
 }
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
