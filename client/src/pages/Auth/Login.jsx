@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 
 import campusBg from '/image.png';
-import logoUrl from '/favicon.ico';
 
 export default function Login() {
     const [email, setEmail] = useState('');
@@ -70,7 +69,7 @@ const FeatureItem = ({ icon: Icon, text }) => (
                     <div>
                         <div className="flex items-center gap-4 mb-6">
                             <div className="w-16 h-16 rounded-2xl bg-white/40 backdrop-blur-md flex items-center justify-center border border-white/50 shadow-lg shadow-royal/5 p-2">
-                                <img src={logoUrl} alt="MSEC Logo" className="w-full h-full object-contain" />
+                                <img src="/favicon.ico" alt="MSEC Logo" className="w-full h-full object-contain" />
                             </div>
                         </div>
                         <h1 className="text-5xl font-bold text-plum mb-3 tracking-tight">
