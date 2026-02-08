@@ -1,33 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Mail, Phone, User, BookOpen, Calendar, Trophy } from 'lucide-react';
 import { Card } from '../../components/UI/Card';
 import AttendanceGauge from '../../components/UI/AttendanceGauge';
-import { adminAPI, studentAPI } from '../../services/api';
+import { useStudent } from '../../services/queries';
+import { studentAPI } from '../../services/api';
 
 export default function StudentProfile() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [student, setStudent] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [downloading, setDownloading] = useState(false);
 
-    useEffect(() => {
-        fetchStudent();
-    }, [id]);
-
-    const fetchStudent = async () => {
-        try {
-            const response = await adminAPI.getStudent(id);
-            if (response.data.success) {
-                setStudent(response.data.data.student);
-            }
-        } catch (error) {
-            console.error('Failed to fetch student:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { data, isLoading } = useStudent(id);
+    const student = data?.data?.student || null;
 
     const downloadReport = async () => {
         setDownloading(true);
@@ -47,7 +32,7 @@ export default function StudentProfile() {
         }
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="space-y-6">
                 <div className="animate-pulse">

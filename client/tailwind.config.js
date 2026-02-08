@@ -39,4 +39,11 @@ export default {
         },
     },
     plugins: [],
+    // Enable JIT mode for faster builds and smaller CSS
+    mode: 'jit',
+    // Optimize for production
+    future: {
+        removeDeprecatedGapUtilities: true,
+        purgeLayersByDefault: true,
+    },
 }

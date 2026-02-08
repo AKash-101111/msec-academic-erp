@@ -1,35 +1,42 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { lazy, Suspense } from 'react';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './lib/queryClient';
 
-// Auth Pages
+// Auth Pages (eager loaded for faster initial login)
 import Login from './pages/Auth/Login';
 
-// Admin Pages
-import AdminDashboard from './pages/Admin/Dashboard';
-import StudentList from './pages/Admin/StudentList';
-import StudentProfile from './pages/Admin/StudentProfile';
-import UploadData from './pages/Admin/UploadData';
-
-// Student Pages
-import StudentDashboard from './pages/Student/Dashboard';
-import Academics from './pages/Student/Academics';
-import Attendance from './pages/Student/Attendance';
-import Activities from './pages/Student/Activities';
-import Analytics from './pages/Student/Analytics';
-
-// Layout
+// Layout (eager loaded as it's always needed)
 import MainLayout from './components/Layout/MainLayout';
+
+// Lazy load all other pages for better performance
+const AdminDashboard = lazy(() => import('./pages/Admin/Dashboard'));
+const StudentList = lazy(() => import('./pages/Admin/StudentList'));
+const StudentProfile = lazy(() => import('./pages/Admin/StudentProfile'));
+const UploadData = lazy(() => import('./pages/Admin/UploadData'));
+
+const StudentDashboard = lazy(() => import('./pages/Student/Dashboard'));
+const Academics = lazy(() => import('./pages/Student/Academics'));
+const Attendance = lazy(() => import('./pages/Student/Attendance'));
+const Activities = lazy(() => import('./pages/Student/Activities'));
+const Analytics = lazy(() => import('./pages/Student/Analytics'));
+
+// Loading Spinner Component
+function LoadingSpinner() {
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-900">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
+        </div>
+    );
+}
 
 // Protected Route Component
 function ProtectedRoute({ children, allowedRoles }) {
     const { user, loading } = useAuth();
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-900">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     if (!user) {
@@ -40,18 +47,14 @@ function ProtectedRoute({ children, allowedRoles }) {
         return <Navigate to={user.role === 'ADMIN' ? '/admin' : '/student'} replace />;
     }
 
-    return children;
+    return <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>;
 }
 
 function AppRoutes() {
     const { user, loading } = useAuth();
 
     if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-900">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
-            </div>
-        );
+        return <LoadingSpinner />;
     }
 
     return (
@@ -102,11 +105,13 @@ function AppRoutes() {
 
 function App() {
     return (
-        <Router>
-            <AuthProvider>
-                <AppRoutes />
-            </AuthProvider>
-        </Router>
+        <QueryClientProvider client={queryClient}>
+            <Router>
+                <AuthProvider>
+                    <AppRoutes />
+                </AuthProvider>
+            </Router>
+        </QueryClientProvider>
     );
 }
 

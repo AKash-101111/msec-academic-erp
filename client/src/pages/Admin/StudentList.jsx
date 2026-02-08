@@ -2,64 +2,47 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Filter, X } from 'lucide-react';
 import DataTable from '../../components/UI/DataTable';
-import { adminAPI } from '../../services/api';
+import { useStudents, useBatches, useDepartments } from '../../services/queries';
+import { useDebounce } from '../../hooks/useDebounce';
 
 export default function StudentList() {
-    const [students, setStudents] = useState([]);
-    const [pagination, setPagination] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [batches, setBatches] = useState([]);
-    const [departments, setDepartments] = useState([]);
-
     const [searchParams, setSearchParams] = useSearchParams();
     const navigate = useNavigate();
+    const [searchInput, setSearchInput] = useState(searchParams.get('search') || '');
+
+    // Debounce search input to reduce API calls
+    const debouncedSearch = useDebounce(searchInput, 400);
 
     const filters = {
-        search: searchParams.get('search') || '',
+        search: debouncedSearch,
         batch: searchParams.get('batch') || '',
         department: searchParams.get('department') || '',
         page: parseInt(searchParams.get('page')) || 1
     };
 
+    // Update URL when debounced search changes
     useEffect(() => {
-        fetchFilters();
-        fetchStudents();
-    }, [searchParams]);
-
-    const fetchFilters = async () => {
-        try {
-            const [batchesRes, deptsRes] = await Promise.all([
-                adminAPI.getBatches(),
-                adminAPI.getDepartments()
-            ]);
-            if (batchesRes.data.success) setBatches(batchesRes.data.data.batches);
-            if (deptsRes.data.success) setDepartments(deptsRes.data.data.departments);
-        } catch (error) {
-            console.error('Failed to fetch filters:', error);
+        if (debouncedSearch !== searchParams.get('search')) {
+            updateFilters('search', debouncedSearch);
         }
-    };
+    }, [debouncedSearch]);
 
-    const fetchStudents = async () => {
-        setLoading(true);
-        try {
-            const response = await adminAPI.getStudents({
-                page: filters.page,
-                limit: 20,
-                search: filters.search || undefined,
-                batch: filters.batch || undefined,
-                department: filters.department || undefined
-            });
+    // Use React Query hooks for data fetching with automatic caching
+    const { data: studentsData, isLoading: studentsLoading } = useStudents({
+        page: filters.page,
+        limit: 20,
+        search: filters.search || undefined,
+        batch: filters.batch || undefined,
+        department: filters.department || undefined
+    });
 
-            if (response.data.success) {
-                setStudents(response.data.data.students);
-                setPagination(response.data.data.pagination);
-            }
-        } catch (error) {
-            console.error('Failed to fetch students:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { data: batchesData } = useBatches();
+    const { data: departmentsData } = useDepartments();
+
+    const students = studentsData?.data?.students || [];
+    const pagination = studentsData?.data?.pagination || null;
+    const batches = batchesData?.data?.batches || [];
+    const departments = departmentsData?.data?.departments || [];
 
     const updateFilters = (key, value) => {
         const newParams = new URLSearchParams(searchParams);
@@ -75,10 +58,11 @@ export default function StudentList() {
     };
 
     const clearFilters = () => {
+        setSearchInput('');
         setSearchParams({});
     };
 
-    const hasActiveFilters = filters.search || filters.batch || filters.department;
+    const hasActiveFilters = debouncedSearch || filters.batch || filters.department;
 
     const columns = [
         { key: 'rollNumber', label: 'Roll No' },
@@ -137,8 +121,8 @@ export default function StudentList() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                             <input
                                 type="text"
-                                value={filters.search}
-                                onChange={(e) => updateFilters('search', e.target.value)}
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
                                 placeholder="Search by name or roll number..."
                                 className="input-field pl-10"
                             />
@@ -194,7 +178,7 @@ export default function StudentList() {
             <DataTable
                 columns={columns}
                 data={students}
-                loading={loading}
+                loading={studentsLoading}
                 pagination={pagination}
                 onPageChange={(page) => updateFilters('page', page.toString())}
                 onRowClick={(student) => navigate(`/admin/student/${student.id}`)}

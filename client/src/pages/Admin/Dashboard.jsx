@@ -1,32 +1,15 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, AlertTriangle, TrendingDown, Upload, ChevronRight } from 'lucide-react';
 import { Card, StatCard } from '../../components/UI/Card';
-import { adminAPI } from '../../services/api';
+import { useAdminDashboard } from '../../services/queries';
 
 export default function AdminDashboard() {
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const { data, isLoading } = useAdminDashboard();
+    
+    const stats = data?.data || null;
 
-    useEffect(() => {
-        fetchDashboard();
-    }, []);
-
-    const fetchDashboard = async () => {
-        try {
-            const response = await adminAPI.getDashboard();
-            if (response.data.success) {
-                setStats(response.data.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch dashboard:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="space-y-6">
                 <div className="animate-pulse">

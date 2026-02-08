@@ -1,39 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Calendar, Trophy, BarChart3, Download, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Card, StatCard } from '../../components/UI/Card';
 import AttendanceGauge from '../../components/UI/AttendanceGauge';
+import { useStudentProfile } from '../../services/queries';
 import { studentAPI } from '../../services/api';
 
 export default function StudentDashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [profile, setProfile] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [downloading, setDownloading] = useState(false);
 
-    useEffect(() => {
-        fetchProfile();
-    }, []);
-
-    const fetchProfile = async () => {
-        try {
-            const response = await studentAPI.getProfile();
-            if (response.data.success) {
-                setProfile(response.data.data);
-            }
-        } catch (error) {
-            console.error('Failed to fetch profile:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { data, isLoading } = useStudentProfile(user?.studentProfile?.id);
+    const profile = data?.data || null;
 
     const downloadReport = async () => {
         setDownloading(true);
         try {
-            const response = await studentAPI.downloadReport();
+            const response = await studentAPI.downloadReport(user?.studentProfile?.id);
             const url = window.URL.createObjectURL(new Blob([response.data]));
             const link = document.createElement('a');
             link.href = url;
@@ -48,7 +33,7 @@ export default function StudentDashboard() {
         }
     };
 
-    if (loading) {
+    if (isLoading) {
         return (
             <div className="space-y-6">
                 <div className="animate-pulse">
