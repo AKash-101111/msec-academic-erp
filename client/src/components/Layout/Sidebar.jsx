@@ -59,46 +59,29 @@ export default function Sidebar() {
                 />
             )}
 
-            {/* Sidebar */}
-            <aside
-                className={`
-          fixed lg:static inset-y-0 left-0 z-50
-<<<<<<< HEAD
-          w-72 bg-white/95 dark:bg-primary-900/95 backdrop-blur-xl
-          border-r border-primary-200 dark:border-primary-800
-          transform transition-all duration-300 ease-in-out
-=======
-          w-72 bg-lavender/95 backdrop-blur-xl
-          border-r border-amethyst/30
-          transform transition-transform duration-300 ease-in-out
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
-          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        `}
-            >
-                <div className="flex flex-col h-full">
-                    {/* Logo */}
-<<<<<<< HEAD
-                    <div className="p-6 border-b border-primary-200 dark:border-primary-800">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary-500 to-secondary-700 flex items-center justify-center shadow-lg shadow-secondary-500/25">
-                                <IconBook className="w-5 h-5 text-white" stroke={2} />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-primary-900 dark:text-white">MSEC ERP</h1>
-                                <p className="text-xs text-primary-500 dark:text-primary-400">Academic Portal</p>
-=======
-                    <div className="p-6 border-b border-amethyst/30">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-royal flex items-center justify-center shadow-lg shadow-royal/25">
-                                <BookOpen className="w-5 h-5 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-xl font-bold text-plum">MSEC ERP</h1>
-                                <p className="text-xs text-plum/60">Academic Portal</p>
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
-                            </div>
-                        </div>
+    {/* Sidebar */}
+    <aside
+        className={`
+  fixed lg:static inset-y-0 left-0 z-50
+  w-72 bg-lavender/95 backdrop-blur-xl
+  border-r border-amethyst/30
+  transform transition-transform duration-300 ease-in-out
+  ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+`}
+    >
+        <div className="flex flex-col h-full">
+            {/* Logo */}
+            <div className="p-6 border-b border-amethyst/30">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-royal flex items-center justify-center shadow-lg shadow-royal/25">
+                        <IconBook className="w-5 h-5 text-white" stroke={2} />
                     </div>
+                    <div>
+                        <h1 className="text-xl font-bold text-plum">MSEC ERP</h1>
+                        <p className="text-xs text-plum/60">Academic Portal</p>
+                    </div>
+                </div>
+            </div>
 
                     {/* Navigation */}
                     <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
@@ -108,18 +91,12 @@ export default function Sidebar() {
                                 to={link.to}
                                 end={link.exact}
                                 onClick={() => setIsOpen(false)}
-                                className={({ isActive }) =>
-<<<<<<< HEAD
-                                    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${isActive
-                                        ? 'bg-secondary-500/10 dark:bg-secondary-600/20 text-secondary-600 dark:text-secondary-400 shadow-lg shadow-secondary-500/10'
-                                        : 'text-primary-600 dark:text-primary-400 hover:text-primary-900 dark:hover:text-white hover:bg-primary-100 dark:hover:bg-primary-800/50'
-=======
-                                    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
-                                        ? 'bg-royal/10 text-royal shadow-lg shadow-royal/10'
-                                        : 'text-plum/60 hover:text-royal hover:bg-royal/5'
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
-                                    }`
-                                }
+className={({ isActive }) =>
+    `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive
+        ? 'bg-royal/10 text-royal shadow-lg shadow-royal/10'
+        : 'text-plum/60 hover:text-royal hover:bg-royal/5'
+    }`
+}
                             >
                                 <link.icon size={20} stroke={2} />
                                 {link.label}
@@ -127,34 +104,21 @@ export default function Sidebar() {
                         ))}
                     </nav>
 
-                    {/* User section */}
-<<<<<<< HEAD
-                    <div className="p-4 border-t border-primary-200 dark:border-primary-800">
-                        <div className="flex items-center gap-3 mb-4 px-4">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center text-white font-semibold shadow-lg">
-                                {user?.name?.charAt(0) || 'U'}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-primary-900 dark:text-white truncate">
-                                    {user?.name || 'User'}
-                                </p>
-                                <p className="text-xs text-primary-600 dark:text-primary-400 truncate">
-=======
-                    <div className="p-4 border-t border-amethyst/30">
-                        <div className="flex items-center gap-3 mb-4 px-4">
-                            <div className="w-10 h-10 rounded-full bg-amethyst flex items-center justify-center text-white font-semibold">
-                                {user?.name?.charAt(0) || 'U'}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-plum truncate">
-                                    {user?.name || 'User'}
-                                </p>
-                                <p className="text-xs text-plum/60 truncate">
->>>>>>> 48ffff9 (Royal Amethyst theme + login UI update)
-                                    {user?.role === 'ADMIN' ? 'Administrator' : user?.studentProfile?.rollNumber}
-                                </p>
-                            </div>
-                        </div>
+{/* User section */}
+<div className="p-4 border-t border-amethyst/30">
+    <div className="flex items-center gap-3 mb-4 px-4">
+        <div className="w-10 h-10 rounded-full bg-amethyst flex items-center justify-center text-white font-semibold">
+            {user?.name?.charAt(0) || 'U'}
+        </div>
+        <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-plum truncate">
+                {user?.name || 'User'}
+            </p>
+            <p className="text-xs text-plum/60 truncate">
+                {user?.role === 'ADMIN' ? 'Administrator' : user?.studentProfile?.rollNumber}
+            </p>
+        </div>
+    </div>
                         <button
                             onClick={handleLogout}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-500/10 transition-all duration-200"
