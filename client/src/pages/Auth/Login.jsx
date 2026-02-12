@@ -22,30 +22,30 @@ export default function Login() {
     const { login } = useAuth();
     const navigate = useNavigate();
 
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
 
-    const result = await login(email, password);
+        const result = await login(email, password);
 
-    if (result.success) {
-        navigate(result.user.role === 'ADMIN' ? '/admin' : '/student');
-    } else {
-        setError(result.error);
-    }
+        if (result.success) {
+            navigate(result.user.role === 'ADMIN' ? '/admin' : '/student');
+        } else {
+            setError(result.error);
+        }
 
-    setLoading(false);
-};
+        setLoading(false);
+    };
 
-const FeatureItem = ({ icon: Icon, text }) => (
-    <div className="flex items-center gap-4 text-plum/80 group">
-        <div className="p-2 rounded-lg bg-royal/10 group-hover:bg-royal/20 transition-colors">
-            <Icon size={24} className="text-royal" />
+    const FeatureItem = ({ icon: Icon, text }) => (
+        <div className="flex items-center gap-4 text-plum/80 group">
+            <div className="p-2 rounded-lg bg-royal/10 group-hover:bg-royal/20 transition-colors">
+                <Icon size={24} className="text-royal" />
+            </div>
+            <span className="text-lg font-medium tracking-wide">{text}</span>
         </div>
-        <span className="text-lg font-medium tracking-wide">{text}</span>
-    </div>
-);
+    );
 
     return (
         <div className="min-h-screen flex font-sans">
@@ -130,6 +130,7 @@ const FeatureItem = ({ icon: Icon, text }) => (
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="admin@msec.edu.in"
                                         required
+                                        autoComplete="email"
                                         className="w-full bg-lavender/30 px-4 py-3.5 pl-5 rounded-xl border border-amethyst/50 text-plum placeholder:text-plum/30 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal transition-all duration-300 shadow-inner group-hover:border-amethyst"
                                     />
                                 </div>
@@ -147,6 +148,7 @@ const FeatureItem = ({ icon: Icon, text }) => (
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="••••••••"
                                         required
+                                        autoComplete="current-password"
                                         className="w-full bg-lavender/30 px-4 py-3.5 pl-5 rounded-xl border border-amethyst/50 text-plum placeholder:text-plum/30 focus:outline-none focus:border-royal focus:ring-1 focus:ring-royal transition-all duration-300 shadow-inner group-hover:border-amethyst pr-12"
                                     />
                                     <button

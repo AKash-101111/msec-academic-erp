@@ -33,6 +33,9 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
+    // Only handle http/https requests (skip chrome-extension://, etc.)
+    if (!url.protocol.startsWith('http')) return;
+
     // Skip non-GET requests
     if (request.method !== 'GET') return;
 
@@ -41,7 +44,6 @@ self.addEventListener('fetch', (event) => {
         event.respondWith(
             fetch(request)
                 .catch(() => {
-                    // If offline and we have cached data, return it
                     return caches.match(request);
                 })
         );
@@ -53,8 +55,7 @@ self.addEventListener('fetch', (event) => {
         caches.match(request).then((cachedResponse) => {
             const fetchPromise = fetch(request)
                 .then((networkResponse) => {
-                    // Update cache with fresh response
-                    if (networkResponse && networkResponse.status === 200) {
+                    if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
                         const responseClone = networkResponse.clone();
                         caches.open(CACHE_NAME).then((cache) => {
                             cache.put(request, responseClone);
@@ -62,7 +63,7 @@ self.addEventListener('fetch', (event) => {
                     }
                     return networkResponse;
                 })
-                .catch(() => cachedResponse); // Fallback to cache if network fails
+                .catch(() => cachedResponse);
 
             return cachedResponse || fetchPromise;
         })
