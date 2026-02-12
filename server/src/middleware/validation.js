@@ -1,4 +1,4 @@
-import { body, validationResult } from 'express-validator';
+import { body, param, query, validationResult } from 'express-validator';
 
 /**
  * Validation middleware to check for validation errors
@@ -9,7 +9,10 @@ export const validate = (req, res, next) => {
         return res.status(400).json({
             success: false,
             message: 'Validation failed',
-            errors: errors.array()
+            errors: errors.array().map(err => ({
+                field: err.path,
+                message: err.msg
+            }))
         });
     }
     next();
@@ -21,25 +24,38 @@ export const validate = (req, res, next) => {
 export const loginValidation = [
     body('email')
         .notEmpty().withMessage('Email is required')
-        .isEmail().withMessage('Must be a valid email'),
+        .isEmail().withMessage('Must be a valid email')
+        .normalizeEmail(),
     body('password')
         .notEmpty().withMessage('Password is required')
-        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
+        .isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+    validate,
 ];
 
 /**
- * Student query validation
+ * Student query validation (for paginated lists)
  */
 export const studentQueryValidation = [
-    body('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
-    body('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
-    body('search').optional().isString().trim(),
-    body('batch').optional().isString().trim(),
-    body('department').optional().isString().trim()
+    query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
+    query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
+    query('search').optional().isString().trim().escape(),
+    query('batch').optional().isString().trim().escape(),
+    query('department').optional().isString().trim().escape(),
+    query('sortBy').optional().isIn(['rollNumber', 'department', 'batch']).withMessage('Invalid sort field'),
+    query('sortOrder').optional().isIn(['asc', 'desc']).withMessage('Sort order must be asc or desc'),
+    validate,
 ];
 
 /**
- * Upload file validation
+ * Student ID param validation
+ */
+export const studentIdValidation = [
+    param('id').notEmpty().isString().trim().withMessage('Valid student ID is required'),
+    validate,
+];
+
+/**
+ * Upload file validation middleware (non-express-validator, manual check)
  */
 export const uploadValidation = (req, res, next) => {
     if (!req.file) {
@@ -74,14 +90,22 @@ export const uploadValidation = (req, res, next) => {
 
 /**
  * Sanitize user input to prevent XSS
+ * Strips <script> tags and trims whitespace from all string inputs
  */
 export const sanitizeInput = (req, res, next) => {
     const sanitize = (obj) => {
+        if (!obj || typeof obj !== 'object') return;
         for (const key in obj) {
-            if (typeof obj[key] === 'string') {
-                obj[key] = obj[key].trim().replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-                sanitize(obj[key]);
+            if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                if (typeof obj[key] === 'string') {
+                    obj[key] = obj[key]
+                        .trim()
+                        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                        .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '') // Strip inline event handlers
+                        .replace(/javascript:/gi, ''); // Strip javascript: protocol
+                } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                    sanitize(obj[key]);
+                }
             }
         }
     };

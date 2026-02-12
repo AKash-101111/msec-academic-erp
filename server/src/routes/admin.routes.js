@@ -1,6 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import { authenticate, isAdmin } from '../middleware/auth.js';
+import { studentQueryValidation, studentIdValidation, uploadValidation } from '../middleware/validation.js';
 import { parseExcelFile } from '../utils/excelParser.js';
 import prisma from '../utils/prisma.js';
 
@@ -10,7 +11,7 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // Reduced to 5MB for safety
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
     const allowedMimeTypes = [
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
@@ -25,6 +26,18 @@ const upload = multer({
     }
   }
 });
+
+/**
+ * Safely parse a JSON string – returns null on failure instead of crashing
+ */
+function safeJsonParse(str) {
+  if (!str || typeof str !== 'string') return null;
+  try {
+    return JSON.parse(str);
+  } catch {
+    return null;
+  }
+}
 
 // GET /api/admin/dashboard - Dashboard statistics
 router.get('/dashboard', authenticate, isAdmin, async (req, res, next) => {
@@ -63,8 +76,8 @@ router.get('/dashboard', authenticate, isAdmin, async (req, res, next) => {
           batch: b.batch,
           count: b._count.id
         })),
-        attendanceShortageCount: Number(attendanceShortage[0].count),
-        performanceRiskCount: Number(performanceRisk[0].count)
+        attendanceShortageCount: Number(attendanceShortage[0]?.count || 0),
+        performanceRiskCount: Number(performanceRisk[0]?.count || 0)
       }
     });
   } catch (error) {
@@ -73,7 +86,7 @@ router.get('/dashboard', authenticate, isAdmin, async (req, res, next) => {
 });
 
 // GET /api/admin/students - Paginated student list with filters
-router.get('/students', authenticate, isAdmin, async (req, res, next) => {
+router.get('/students', authenticate, isAdmin, studentQueryValidation, async (req, res, next) => {
   try {
     const {
       page = 1,
@@ -105,7 +118,7 @@ router.get('/students', authenticate, isAdmin, async (req, res, next) => {
     }
 
     const [students, total] = await Promise.all([
-      // Optimized: Fetch only necessary fields, not all attendances
+      // Optimized: Fetch only necessary fields
       prisma.studentProfile.findMany({
         where,
         skip,
@@ -189,7 +202,7 @@ router.get('/students', authenticate, isAdmin, async (req, res, next) => {
 });
 
 // GET /api/admin/student/:id - Single student details
-router.get('/student/:id', authenticate, isAdmin, async (req, res, next) => {
+router.get('/student/:id', authenticate, isAdmin, studentIdValidation, async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -261,13 +274,13 @@ router.get('/departments', authenticate, isAdmin, async (req, res, next) => {
 });
 
 // POST /api/admin/upload/academics - Upload academic data (Transactional)
-router.post('/upload/academics', authenticate, isAdmin, upload.single('file'), async (req, res, next) => {
+router.post('/upload/academics', authenticate, isAdmin, upload.single('file'), uploadValidation, async (req, res, next) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
-    }
-
     const data = parseExcelFile(req.file.buffer);
+
+    if (!data || data.length === 0) {
+      return res.status(400).json({ success: false, message: 'File contains no data' });
+    }
 
     // Use transaction for all-or-nothing atomicity
     const results = await prisma.$transaction(async (tx) => {
@@ -281,20 +294,25 @@ router.post('/upload/academics', authenticate, isAdmin, upload.single('file'), a
         });
 
         if (!student) {
-          throw new Error(`Critical Error: Student with roll number ${row.rollNumber} not found. Operation aborted.`);
+          throw new Error(`Student with roll number ${row.rollNumber} not found. Operation aborted.`);
+        }
+
+        const year = parseInt(row.year);
+        if (isNaN(year) || year < 1 || year > 4) {
+          throw new Error(`Invalid year "${row.year}" for roll number ${row.rollNumber}. Must be 1-4.`);
         }
 
         const academicYear = await tx.academicYear.upsert({
           where: {
             studentId_year: {
               studentId: student.id,
-              year: parseInt(row.year)
+              year
             }
           },
           update: { gpa: parseFloat(row.gpa) || null },
           create: {
             studentId: student.id,
-            year: parseInt(row.year),
+            year,
             gpa: parseFloat(row.gpa) || null
           }
         });
@@ -337,18 +355,21 @@ router.post('/upload/academics', authenticate, isAdmin, upload.single('file'), a
     });
   } catch (error) {
     // Transaction will automatically rollback on error
+    if (error.message.includes('not found') || error.message.includes('Invalid year')) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     next(error);
   }
 });
 
 // POST /api/admin/upload/attendance - Upload attendance data (Transactional)
-router.post('/upload/attendance', authenticate, isAdmin, upload.single('file'), async (req, res, next) => {
+router.post('/upload/attendance', authenticate, isAdmin, upload.single('file'), uploadValidation, async (req, res, next) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
-    }
-
     const data = parseExcelFile(req.file.buffer);
+
+    if (!data || data.length === 0) {
+      return res.status(400).json({ success: false, message: 'File contains no data' });
+    }
 
     const results = await prisma.$transaction(async (tx) => {
       let updatedCount = 0;
@@ -361,7 +382,16 @@ router.post('/upload/attendance', authenticate, isAdmin, upload.single('file'), 
         });
 
         if (!student) {
-          throw new Error(`Critical Error: Student with roll number ${row.rollNumber} not found. Operation aborted.`);
+          throw new Error(`Student with roll number ${row.rollNumber} not found. Operation aborted.`);
+        }
+
+        if (!row.subjectName) {
+          throw new Error(`Missing subject name for roll number ${row.rollNumber}.`);
+        }
+
+        const attendancePercent = parseFloat(row.attendancePercent);
+        if (isNaN(attendancePercent) || attendancePercent < 0 || attendancePercent > 100) {
+          throw new Error(`Invalid attendance percentage "${row.attendancePercent}" for ${row.rollNumber}.`);
         }
 
         await tx.attendance.upsert({
@@ -372,14 +402,14 @@ router.post('/upload/attendance', authenticate, isAdmin, upload.single('file'), 
             }
           },
           update: {
-            attendancePercent: parseFloat(row.attendancePercent),
+            attendancePercent,
             totalClasses: parseInt(row.totalClasses) || null,
             attendedClasses: parseInt(row.attendedClasses) || null
           },
           create: {
             studentId: student.id,
             subjectName: row.subjectName,
-            attendancePercent: parseFloat(row.attendancePercent),
+            attendancePercent,
             totalClasses: parseInt(row.totalClasses) || null,
             attendedClasses: parseInt(row.attendedClasses) || null
           }
@@ -396,21 +426,25 @@ router.post('/upload/attendance', authenticate, isAdmin, upload.single('file'), 
       data: { updated: results }
     });
   } catch (error) {
+    if (error.message.includes('not found') || error.message.includes('Missing') || error.message.includes('Invalid')) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     next(error);
   }
 });
 
 // POST /api/admin/upload/activities - Upload activities data (Transactional)
-router.post('/upload/activities', authenticate, isAdmin, upload.single('file'), async (req, res, next) => {
+router.post('/upload/activities', authenticate, isAdmin, upload.single('file'), uploadValidation, async (req, res, next) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
-    }
-
     const data = parseExcelFile(req.file.buffer);
+
+    if (!data || data.length === 0) {
+      return res.status(400).json({ success: false, message: 'File contains no data' });
+    }
 
     const results = await prisma.$transaction(async (tx) => {
       let updatedCount = 0;
+      const parseErrors = [];
 
       for (const row of data) {
         if (!row.rollNumber) continue;
@@ -420,43 +454,66 @@ router.post('/upload/activities', authenticate, isAdmin, upload.single('file'), 
         });
 
         if (!student) {
-          throw new Error(`Critical Error: Student with roll number ${row.rollNumber} not found. Operation aborted.`);
+          throw new Error(`Student with roll number ${row.rollNumber} not found. Operation aborted.`);
+        }
+
+        // Safe JSON parsing — won't crash on malformed data
+        const internships = safeJsonParse(row.internships);
+        const scholarships = safeJsonParse(row.scholarships);
+        const ecube = safeJsonParse(row.ecube);
+        const extracurricular = safeJsonParse(row.extracurricular);
+        const sports = safeJsonParse(row.sports);
+        const certifications = safeJsonParse(row.certifications);
+        const hackathons = safeJsonParse(row.hackathons);
+
+        // Track parse warnings (non-fatal)
+        const fields = { internships: row.internships, scholarships: row.scholarships, ecube: row.ecube, extracurricular: row.extracurricular, sports: row.sports, certifications: row.certifications, hackathons: row.hackathons };
+        for (const [field, rawValue] of Object.entries(fields)) {
+          if (rawValue && safeJsonParse(rawValue) === null) {
+            parseErrors.push(`Warning: Could not parse "${field}" for roll ${row.rollNumber}`);
+          }
         }
 
         await tx.activities.upsert({
           where: { studentId: student.id },
           update: {
-            internships: row.internships ? JSON.parse(row.internships) : undefined,
-            scholarships: row.scholarships ? JSON.parse(row.scholarships) : undefined,
-            ecube: row.ecube ? JSON.parse(row.ecube) : undefined,
-            extracurricular: row.extracurricular ? JSON.parse(row.extracurricular) : undefined,
-            sports: row.sports ? JSON.parse(row.sports) : undefined,
-            certifications: row.certifications ? JSON.parse(row.certifications) : undefined,
-            hackathons: row.hackathons ? JSON.parse(row.hackathons) : undefined
+            ...(internships !== null && { internships }),
+            ...(scholarships !== null && { scholarships }),
+            ...(ecube !== null && { ecube }),
+            ...(extracurricular !== null && { extracurricular }),
+            ...(sports !== null && { sports }),
+            ...(certifications !== null && { certifications }),
+            ...(hackathons !== null && { hackathons }),
           },
           create: {
             studentId: student.id,
-            internships: row.internships ? JSON.parse(row.internships) : null,
-            scholarships: row.scholarships ? JSON.parse(row.scholarships) : null,
-            ecube: row.ecube ? JSON.parse(row.ecube) : null,
-            extracurricular: row.extracurricular ? JSON.parse(row.extracurricular) : null,
-            sports: row.sports ? JSON.parse(row.sports) : null,
-            certifications: row.certifications ? JSON.parse(row.certifications) : null,
-            hackathons: row.hackathons ? JSON.parse(row.hackathons) : null
+            internships: internships || null,
+            scholarships: scholarships || null,
+            ecube: ecube || null,
+            extracurricular: extracurricular || null,
+            sports: sports || null,
+            certifications: certifications || null,
+            hackathons: hackathons || null
           }
         });
 
         updatedCount++;
       }
-      return updatedCount;
+      return { updatedCount, parseErrors };
     });
 
     res.json({
       success: true,
-      message: `Successfully processed ${results} activity records.`,
-      data: { updated: results }
+      message: `Successfully processed ${results.updatedCount} activity records.`,
+      data: {
+        updated: results.updatedCount,
+        ...(results.parseErrors.length > 0 && { warnings: results.parseErrors })
+      }
     });
   } catch (error) {
+    if (error.message.includes('not found')) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     next(error);
   }
 });

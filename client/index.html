@@ -4,25 +4,35 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-  <link rel="apple-touch-icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" href="/image.png" />
   <link rel="manifest" href="/manifest.json" />
-  <meta name="theme-color" content="#111827" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#7A3F91" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#030712" media="(prefers-color-scheme: dark)" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="description" content="MSEC Academic ERP - Enterprise Student Lifecycle Management System" />
-  
+  <meta name="description"
+    content="MSEC Academic ERP - Enterprise Student Lifecycle Management System for academic records, attendance tracking, analytics, and comprehensive student performance reports." />
+  <meta name="keywords" content="MSEC, Academic ERP, Student Management, Attendance, GPA, Engineering College" />
+  <meta name="author" content="MSEC Academic ERP" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MSEC Academic ERP" />
+  <meta property="og:description" content="Enterprise Student Lifecycle Management System" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/image.png" />
+
   <!-- DNS Prefetch & Preconnect for faster resource loading -->
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
   <link rel="dns-prefetch" href="https://fonts.gstatic.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
+
   <!-- Optimized font loading with display=swap -->
   <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600;700&display=swap"
     rel="stylesheet">
-  
+
   <!-- Dark mode support - prevents flash of wrong theme -->
   <script>
     if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -31,7 +41,7 @@
       document.documentElement.classList.remove('dark')
     }
   </script>
-  
+
   <title>MSEC Academic ERP</title>
 </head>
 

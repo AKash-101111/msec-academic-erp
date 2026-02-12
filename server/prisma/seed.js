@@ -1,7 +1,20 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+// Production guard: prevent accidental seeding in production
+if (process.env.NODE_ENV === 'production' && !process.env.FORCE_SEED) {
+    console.error('❌ Seeding is disabled in production. Set FORCE_SEED=true to override.');
+    process.exit(1);
+}
 
 const prisma = new PrismaClient();
+
+// Use environment variables for seed passwords (with dev-only defaults)
+const ADMIN_PASSWORD = process.env.ADMIN_SEED_PASSWORD || 'admin123';
+const STUDENT_PASSWORD = process.env.STUDENT_SEED_PASSWORD || 'student123';
 
 const departments = ['CSE', 'ECE', 'EEE', 'MECH', 'CIVIL', 'IT'];
 const batches = ['2021-2025', '2022-2026', '2023-2027', '2024-2028'];
@@ -27,7 +40,7 @@ async function main() {
     console.log('✅ Cleared existing data');
 
     // Create admin user
-    const adminPassword = await bcrypt.hash('admin123', 10);
+    const adminPassword = await bcrypt.hash(ADMIN_PASSWORD, 12);
     const admin = await prisma.user.create({
         data: {
             name: 'Admin User',
@@ -36,10 +49,10 @@ async function main() {
             role: 'ADMIN'
         }
     });
-    console.log('✅ Created admin user: admin@msec.edu.in / admin123');
+    console.log(`✅ Created admin user: admin@msec.edu.in / ${ADMIN_PASSWORD}`);
 
     // Create students (150 students)
-    const studentPassword = await bcrypt.hash('student123', 10);
+    const studentPassword = await bcrypt.hash(STUDENT_PASSWORD, 12);
     const students = [];
 
     for (let i = 1; i <= 150; i++) {
