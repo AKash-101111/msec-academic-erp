@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { adminAPI, studentAPI } from './api';
 
 // Query Keys
@@ -33,9 +33,10 @@ export function useStudents(params = {}) {
             const { data } = await adminAPI.getStudents(params);
             return data;
         },
-        keepPreviousData: true, // Keep showing old data while fetching new page
+        placeholderData: keepPreviousData, // v5 replacement for keepPreviousData: true
     });
 }
+
 
 export function useStudent(id) {
     return useQuery({
@@ -73,7 +74,7 @@ export function useDepartments() {
 // Upload mutations
 export function useUploadAcademics() {
     const queryClient = useQueryClient();
-    
+
     return useMutation({
         mutationFn: (file) => adminAPI.uploadAcademics(file),
         onSuccess: () => {
@@ -86,7 +87,7 @@ export function useUploadAcademics() {
 
 export function useUploadAttendance() {
     const queryClient = useQueryClient();
-    
+
     return useMutation({
         mutationFn: (file) => adminAPI.uploadAttendance(file),
         onSuccess: () => {
@@ -98,7 +99,7 @@ export function useUploadAttendance() {
 
 export function useUploadActivities() {
     const queryClient = useQueryClient();
-    
+
     return useMutation({
         mutationFn: (file) => adminAPI.uploadActivities(file),
         onSuccess: () => {
