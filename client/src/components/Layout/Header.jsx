@@ -1,5 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
-import { IconBell, IconSearch } from '@tabler/icons-react';
+import { Bell as IconBell, Search as IconSearch } from 'lucide-react';
 import DarkModeToggle from '../UI/DarkModeToggle';
 
 export default function Header() {

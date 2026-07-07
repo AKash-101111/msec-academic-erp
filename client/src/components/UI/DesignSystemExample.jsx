@@ -1,5 +1,5 @@
 // Example component showcasing the new design system
-import { IconSchool, IconChartBar, IconTrophy } from '@tabler/icons-react';
+import { School as IconSchool, BarChart as IconChartBar, Trophy as IconTrophy } from 'lucide-react';
 
 export default function DesignSystemExample() {
   return (

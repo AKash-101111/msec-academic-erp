@@ -1,4 +1,4 @@
-import { IconMoon, IconSun } from '@tabler/icons-react';
+import { Moon as IconMoon, Sun as IconSun } from 'lucide-react';
 import { useDarkMode } from '../../hooks/useDarkMode';
 
 export default function DarkModeToggle() {

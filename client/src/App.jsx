@@ -1,8 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
+import api from './services/api';
 
 // Auth Pages (eager loaded for faster initial login)
 import Login from './pages/Auth/Login';
@@ -104,9 +105,21 @@ function AppRoutes() {
 }
 
 function App() {
+    useEffect(() => {
+        // Ping the server every 5 minutes to prevent it from sleeping
+        const pingInterval = setInterval(() => {
+            console.log(`[PING] Sending keep-alive ping to server at ${new Date().toLocaleTimeString()}...`);
+            api.get('/health')
+                .then(() => console.log(`[PING] Server responded successfully.`))
+                .catch(err => console.error('[PING] Ping failed:', err));
+        }, 5 * 60 * 1000); // 5 minutes
+
+        return () => clearInterval(pingInterval);
+    }, []);
+
     return (
         <QueryClientProvider client={queryClient}>
-            <Router>
+            <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
                 <AuthProvider>
                     <AppRoutes />
                 </AuthProvider>

@@ -2,18 +2,18 @@ import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-    IconLayoutDashboard,
-    IconUsers,
-    IconUpload,
-    IconSchool,
-    IconCalendar,
-    IconTrophy,
-    IconChartBar,
-    IconLogout,
-    IconMenu2,
-    IconX,
-    IconBook
-} from '@tabler/icons-react';
+    LayoutDashboard as IconLayoutDashboard,
+    Users as IconUsers,
+    Upload as IconUpload,
+    School as IconSchool,
+    Calendar as IconCalendar,
+    Trophy as IconTrophy,
+    BarChart as IconChartBar,
+    LogOut as IconLogout,
+    Menu as IconMenu2,
+    X as IconX,
+    Book as IconBook
+} from 'lucide-react';
 
 export default function Sidebar() {
     const { user, logout } = useAuth();
